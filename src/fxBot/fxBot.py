@@ -20,12 +20,12 @@
 """A trading bot for the Forex market using Oanda's REST API."""
 
 from signal   import signal, SIGINT
+from logging  import basicConfig, WARNING
 from optparse import OptionParser
 from program  import Program
 
 
 _program = None
-_verbose = False
 
 
 def _onInterrupt(signum, frame):
@@ -38,15 +38,13 @@ def _onInterrupt(signum, frame):
   if _program:
     _program.destroy()
 
-  if _verbose:
-    print "Shutting down..."
-
+  # functions from the logging module are not necessarily reentrant and may grab locks, so using
+  # them from an asynchronous context such as a signal handler should be avoided
   exit(0)
 
 
 def main():
   """The main function parses the program arguments and reacts on them."""
-  global _verbose
   global _program
 
   usage = "Usage: %prog [options] <access token>"
@@ -61,20 +59,28 @@ def main():
                     help="list all available currencies")
   parser.add_option("-a", "--account-id", dest="account_id", default=None,
                     help="specify an account ID to use")
-  parser.add_option("-v", "--verbose", dest="verbose", default=False,
-                    action="store_true",
-                    help="increase verbosity of diagnostic output")
+  parser.add_option("-v", "--verbose", dest="verbosity", default=0,
+                    action="count",
+                    help="increase verbosity of output")
 
   (options, arguments) = parser.parse_args()
 
   if len(arguments) != 1:
     parser.error("invalid number of arguments")
 
+  # numeric values of the logging levels:
+  # CRITICAL  50
+  # ERROR     40
+  # WARNING   30
+  # INFO      20
+  # DEBUG     10
+  # NOTSET    0
+  basicConfig(level=max(10, WARNING - options.verbosity * 10))
+
   # register our custom signal handler for SIGINT to tear down our objects correctly
   signal(SIGINT, _onInterrupt)
 
-  _verbose = options.verbose
-  _program = Program(arguments[0])
+  _program = Program(token=arguments[0])
 
   if options.list_accounts:
     _program.listAccounts();

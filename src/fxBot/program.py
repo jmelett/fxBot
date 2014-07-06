@@ -32,27 +32,50 @@ class Program:
     self.__api = API(environment="practice", access_token=token)
 
 
+  def __queryWidths(self, dictionaries, *keys):
+    """Calculate the width of columns to represent various values.
+
+      This method can be used to query the expected column width for a given set of values to be
+      represented in it.
+
+      Parameters:
+        dictionaries  A list of dictionaries.
+        keys          A list of dicts used to index into 'dictionaries'. Aach dictionary has to
+                      contain two key-value pairs: The value of 'title' directly represents the
+                      title of the column.
+                      The value of 'key' is used to index into each dict of the dictionaries
+                      argument to retrieve values to put into the column.
+
+      Returns:
+        A list of widths each being the maximum width of all the values retrieved when using all the
+        given keys on each of the dictionaries.
+    """
+    widths = [len(key['title']) for key in keys]
+
+    for dictionary in dictionaries:
+      for i in range(len(keys)):
+        widths[i] = max(widths[i], len(str(dictionary[keys[i]['key']])))
+
+    return widths
+
+
   def listAccounts(self):
     """List all available accounts."""
     idString = "id"
     nameString = "name"
     currencyString = "currency"
-    idWidth = len(idString)
-    nameWidth = len(nameString)
 
     accounts = self.__api.get_accounts().get("accounts")
+    widths = self.__queryWidths(accounts, {'title': idString,   'key': 'accountId'},
+                                          {'title': nameString, 'key': 'accountName'})
 
-    for account in accounts:
-      idWidth   = max(idWidth,   len(str(account['accountId'])))
-      nameWidth = max(nameWidth, len(str(account['accountName'])))
-
-    print "%s %s %s" % (idString.ljust(idWidth),
-                        nameString.ljust(nameWidth),
+    print "%s %s %s" % (idString.ljust(widths[0]),
+                        nameString.ljust(widths[1]),
                         currencyString)
 
     for account in accounts:
-      print "%s %s %s" % (str(account['accountId']).ljust(idWidth),
-                          str(account['accountName']).ljust(nameWidth),
+      print "%s %s %s" % (str(account['accountId']).ljust(widths[0]),
+                          str(account['accountName']).ljust(widths[1]),
                           str(account['accountCurrency']))
 
 
@@ -65,22 +88,18 @@ class Program:
     nameString = "name"
     pipString = "pip"
     maxUnitsString = "maximum trade units"
-    nameWidth = len(nameString)
-    pipWidth = len(pipString)
 
     currencies = self.__api.get_instruments(account_id).get('instruments')
+    widths = self.__queryWidths(currencies, {'title': nameString, 'key': 'displayName'},
+                                            {'title': pipString,  'key': 'pip'})
 
-    for currency in currencies:
-      nameWidth = max(nameWidth, len(str(currency['displayName'])))
-      pipWidth  = max(pipWidth,  len(str(currency['pip'])))
-
-    print "%s %s %s" % (nameString.ljust(nameWidth),
-                        pipString.ljust(pipWidth),
+    print "%s %s %s" % (nameString.ljust(widths[0]),
+                        pipString.ljust(widths[1]),
                         maxUnitsString)
 
     for currency in currencies:
-      print "%s %s %s" % (str(currency['displayName']).ljust(nameWidth),
-                          str(currency['pip']).ljust(pipWidth),
+      print "%s %s %s" % (str(currency['displayName']).ljust(widths[0]),
+                          str(currency['pip']).ljust(widths[1]),
                           str(currency['maxTradeUnits']))
 
 

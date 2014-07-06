@@ -17,9 +17,11 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
-from oandapy    import API
-from currency   import Currency
-from statistics import calculateAvg, calculateEMA
+from oandapy       import API
+from currency      import Currency
+from eventStreamer import EventStreamer
+from rateStreamer  import RateStreamer
+from statistics    import calculateAvg, calculateEMA
 
 
 class Program:
@@ -30,6 +32,8 @@ class Program:
         token  An access token to use for interacting with OANDA's REST API.
     """
     self.__api = API(environment="practice", access_token=token)
+    self.__eventStreamer = EventStreamer(token)
+    self.__rateStreamer = RateStreamer(token)
 
 
   def __queryWidths(self, dictionaries, *keys):
@@ -105,7 +109,7 @@ class Program:
                           str(currency['maxTradeUnits']))
 
 
-  def run(self):
+  def run(self, account_id):
     timeString = "time"
     ema20String = "EMA(20)"
     ema10String = "EMA(10)"
@@ -136,3 +140,6 @@ class Program:
                           str(value['ema10'])
                             if 'ema10' in value
                             else '<nil>')
+
+    self.__eventStreamer.start(accountId=account_id, ignore_heartbeat=False)
+    self.__rateStreamer.start(accountId=account_id, instruments="EUR_USD")

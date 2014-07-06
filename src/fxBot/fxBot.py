@@ -47,14 +47,15 @@ def main():
     program.listAccounts();
     exit(0)
 
-  if options.list_currencies:
-    if not options.account_id:
-      parser.error("no account ID specified, use --account-id=<account ID>")
+  # all remaining paths require an account ID to be passed in
+  if not options.account_id:
+    parser.error("no account ID specified, use --account-id=<account ID>")
 
+  if options.list_currencies:
     program.listCurrencies(options.account_id);
     exit(0)
 
-  program.run()
+  program.run(options.account_id)
 
 
 if __name__ == '__main__':

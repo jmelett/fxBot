@@ -36,6 +36,11 @@ class Program:
     self.__rateStreamer = RateStreamer(token)
 
 
+  def destroy(self):
+    self.__rateStreamer.disconnect()
+    self.__eventStreamer.disconnect()
+
+
   def __queryWidths(self, dictionaries, *keys):
     """Calculate the width of columns to represent various values.
 

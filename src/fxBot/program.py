@@ -54,7 +54,9 @@ class Program:
 
     for dictionary in dictionaries:
       for i in range(len(keys)):
-        widths[i] = max(widths[i], len(str(dictionary[keys[i]['key']])))
+        # we assume that if a key is not present nothing will be printed
+        if keys[i]['key'] in dictionary:
+          widths[i] = max(widths[i], len(str(dictionary[keys[i]['key']])))
 
     return widths
 
@@ -104,19 +106,33 @@ class Program:
 
 
   def run(self):
+    timeString = "time"
+    ema20String = "EMA(20)"
+    ema10String = "EMA(10)"
+
     currency = Currency(self.__api, "EUR_USD")
-    history = currency.history('1h', 20)
+    history = currency.history('1h', 30)
 
     calculateAvg(history, 'open', 'close', 'avg')
     calculateEMA(history, 10, 'avg', 'ema10')
     calculateEMA(history, 20, 'avg', 'ema20')
 
+    widths = self.__queryWidths(history, {'title': timeString,  'key': 'time'},
+                                         {'title': ema20String, 'key': 'ema20'})
+
     print "EUR/USD:"
     print "current prices: bid=%s, ask=%s" % currency.currentPrices()
     print "historic data:"
-    print "<time>                       <EMA 20>                          <EMA 10>"
+
+    print "%s %s %s" % (timeString.ljust(widths[0]),
+                        ema20String.ljust(widths[1]),
+                        ema10String)
 
     for value in history:
-      print "%s: %s vs. %s" % (value['time'],
-                               value['ema20'] if 'ema20' in value else '<nil>',
-                               value['ema10'] if 'ema10' in value else '<nil>')
+      print "%s %s %s" % (str(value['time']).ljust(widths[0]),
+                          str(value['ema20']).ljust(widths[1])
+                            if 'ema20' in value
+                            else '<nil>'.ljust(widths[1]),
+                          str(value['ema10'])
+                            if 'ema10' in value
+                            else '<nil>')

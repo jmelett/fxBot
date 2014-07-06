@@ -19,13 +19,14 @@
 
 """A trading bot for the Forex market using Oanda's REST API."""
 
-from signal   import signal, SIGINT, SIGTERM
+from signal   import signal, pause, SIGINT, SIGTERM
 from logging  import basicConfig, WARNING
 from optparse import OptionParser
 from program  import Program
 
 
 _program = None
+_terminate = False
 
 
 def _onTerminate(signum, frame):
@@ -35,17 +36,25 @@ def _onTerminate(signum, frame):
       signum  Unused.
       frame   Unused.
   """
+  global _program
+  global _terminate
+
+  _terminate = True
+
   if _program:
     _program.destroy()
+    _program = None
 
-  # functions from the logging module are not necessarily reentrant and may grab locks, so using
-  # them from an asynchronous context such as a signal handler should be avoided
+  # Functions from the logging module may use a locking implementation that is not reentrant, so
+  # using them from an asynchronous context such as a signal handler should be avoided, i.e., no
+  # logging here.
   exit(0)
 
 
 def main():
   """The main function parses the program arguments and reacts on them."""
   global _program
+  global _terminate
 
   usage = "Usage: %prog [options] <access token>"
   version = "%prog 0.1"
@@ -95,7 +104,15 @@ def main():
     _program.listCurrencies(options.account_id);
     exit(0)
 
-  _program.run(options.account_id)
+  _program.start(options.account_id)
+
+  # We must not exit here until we know that all threads are either torn down or are daemons anyway
+  # (in which case they are forcefully shutdown when the program terminates). If we exit, nobody is
+  # able to handle signals anymore and we are screwed.
+  # So we block waiting for signals. Note that we should not hit a KeyboardInterrupt exception here
+  # since we replaced the signal handler.
+  while not _terminate:
+    pause()
 
 
 if __name__ == '__main__':

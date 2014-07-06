@@ -17,8 +17,8 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
-from decimal    import Decimal
 from oandapy    import API
+from currency   import Currency
 from statistics import calculateAvg, calculateEMA
 
 
@@ -104,33 +104,19 @@ class Program:
 
 
   def run(self):
-    prices = self.__api.get_prices(instruments="EUR_USD").get("prices")
-    history = self.__api.get_history(instrument="EUR_USD",
-                                     granularity="H4",
-                                     #start=
-                                     #end=datetime.now().isoformat("T"),
-                                     #includeFirst=True,
-                                     candleFormat="midpoint",
-                                     count=20).get("candles")
+    currency = Currency(self.__api, "EUR_USD")
+    history = currency.history('1h', 20)
 
-    # create our own list of dicts with our own set of indices and a reverse ordering where the newest
-    # entries are at the lower indices
-    values = []
-    for value in history:
-      values = [{'time': value['time'],
-                 'open': Decimal(value['openMid']),
-                 'close': Decimal(value['closeMid'])}] + values
-
-    calculateAvg(values, 'open', 'close', 'avg')
-    calculateEMA(values, 10, 'avg', 'ema10')
-    calculateEMA(values, 20, 'avg', 'ema20')
+    calculateAvg(history, 'open', 'close', 'avg')
+    calculateEMA(history, 10, 'avg', 'ema10')
+    calculateEMA(history, 20, 'avg', 'ema20')
 
     print "EUR/USD:"
-    print "current prices: ask=%s, bid=%s" % (prices[0]['ask'], prices[0]['bid'])
+    print "current prices: bid=%s, ask=%s" % currency.currentPrices()
     print "historic data:"
     print "<time>                       <EMA 20>                          <EMA 10>"
 
-    for value in values:
+    for value in history:
       print "%s: %s vs. %s" % (value['time'],
                                value['ema20'] if 'ema20' in value else '<nil>',
                                value['ema10'] if 'ema10' in value else '<nil>')

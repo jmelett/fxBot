@@ -18,6 +18,7 @@
 # ***************************************************************************/
 
 from oandapy   import Streamer
+from logging   import error
 from threading import Thread
 
 
@@ -41,3 +42,16 @@ class ThreadedStreamer(Streamer):
     # daemons which means we do not wait for them to complete if the main thread exits.
     self.__thread.setDaemon(True)
     self.__thread.start()
+
+
+  def on_success(self, data):
+    """Handle received 'tick' data."""
+    self.queue.put(data)
+
+
+  def on_error(self, data):
+    # TODO: find out if a timestamp is delived here
+    error("an error occurred: %s" % data)
+    # TODO: error handling is likely not complete here, we need more knowledge about what happened
+    #       and react accordingly (disconnecting might be too much)
+    self.disconnect()

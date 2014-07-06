@@ -17,7 +17,6 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
-from logging          import info, warn, error
 from threadedStreamer import ThreadedStreamer
 
 
@@ -28,22 +27,3 @@ class EventStreamer(ThreadedStreamer):
     # overwrite the URL to use -- the Streamer class can only query rate streams, no event streams
     # TODO: find out which URL to use in case of a live account
     self.api_url = 'https://stream-fxpractice.oanda.com/v1/events'
-
-
-  def on_success(self, data):
-    if 'transaction' in data:
-      self.queue.put(data)
-    # not sure if the API allows for heartbeat and transaction events at the same time (I think so),
-    # but we don't care: if there is a transaction event we know something happened and we just
-    # ignore the heartbeat (that's why we use elif)
-    elif 'heartbeat' in data:
-      heartbeat = data['heartbeat']
-      info("%s: event heartbeat" % heartbeat['time'])
-    else:
-      warn("Unknown data received: %s", data)
-
-
-  def on_error(self, data):
-    # TODO: find out if a timestamp is delived here
-    error("an error occurred: %s" % data)
-    self.disconnect()

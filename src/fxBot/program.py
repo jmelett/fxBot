@@ -18,6 +18,7 @@
 # ***************************************************************************/
 
 from oandapy       import API
+from Queue         import Queue
 from currency      import Currency
 from eventStreamer import EventStreamer
 from rateStreamer  import RateStreamer
@@ -32,8 +33,9 @@ class Program:
         token  An access token to use for interacting with OANDA's REST API.
     """
     self.__api = API(environment="practice", access_token=token)
-    self.__eventStreamer = EventStreamer(token)
-    self.__rateStreamer = RateStreamer(token)
+    self.__queue = Queue()
+    self.__eventStreamer = EventStreamer(token, self.__queue)
+    self.__rateStreamer = RateStreamer(token, self.__queue)
 
 
   def destroy(self):
@@ -148,3 +150,7 @@ class Program:
 
     self.__eventStreamer.start(accountId=account_id, ignore_heartbeat=False)
     self.__rateStreamer.start(accountId=account_id, instruments="EUR_USD")
+
+    while True:
+      data = self.__queue.get()
+      print("%s" % data)

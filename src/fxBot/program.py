@@ -18,8 +18,8 @@
 # ***************************************************************************/
 
 from oandapy       import API
-from Queue         import Queue
 from currency      import Currency
+from worker        import Worker
 from eventStreamer import EventStreamer
 from rateStreamer  import RateStreamer
 from statistics    import calculateAvg, calculateEMA
@@ -33,12 +33,14 @@ class Program:
         token  An access token to use for interacting with OANDA's REST API.
     """
     self.__api = API(environment="practice", access_token=token)
-    self.__queue = Queue()
-    self.__eventStreamer = EventStreamer(token, self.__queue)
-    self.__rateStreamer = RateStreamer(token, self.__queue)
+    self.__worker = Worker()
+    self.__eventStreamer = EventStreamer(token, self.__worker.queue())
+    self.__rateStreamer = RateStreamer(token, self.__worker.queue())
 
 
   def destroy(self):
+    '''Destroy the program.'''
+    self.__worker.destroy()
     self.__rateStreamer.disconnect()
     self.__eventStreamer.disconnect()
 
@@ -116,7 +118,19 @@ class Program:
                           str(currency['maxTradeUnits'])))
 
 
-  def run(self, account_id):
+  def start(self, account_id):
+    """Start the program.
+
+      An invocation of this method causes the object to create the necessary infrastructure to
+      subscribe for events and react on them.
+
+      Note:
+        Python has a very limited signal handling mechanism in that only the main thread can receive
+        signals. In addition, it will receive/dispatch them only if it is actually running and not
+        blocked in a system call. Since we use blocking primitives basically everywhere (the
+        streamer uses them and so does the worker), we cannot perform any of this work synchronously
+        here and risk to block. Instead, we create new threads for all tasks and return.
+    """
     timeString = "time"
     ema20String = "EMA(20)"
     ema10String = "EMA(10)"
@@ -148,9 +162,10 @@ class Program:
                             if 'ema10' in value
                             else '<nil>'))
 
+    # now start up all our threads
+    self.__worker.start()
     self.__eventStreamer.start(accountId=account_id, ignore_heartbeat=False)
     self.__rateStreamer.start(accountId=account_id, instruments="EUR_USD")
 
-    while True:
-      data = self.__queue.get()
-      print("%s" % data)
+    # We are done, we exit here -- the worker thread as well as the streamer threads will continue
+    # running. Note that this is only due to f*cked up Python signal handling.

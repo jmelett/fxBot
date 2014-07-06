@@ -17,6 +17,7 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
+from logging import info, warn, error
 from oandapy import Streamer
 
 
@@ -34,13 +35,15 @@ class RateStreamer(Streamer):
       # time       Time in a valid datetime format.
       # bid        Bid price
       # ask        Ask price
-      print("%s: %s ask=%s, bid=%s" % (tick['time'], tick['instrument'], tick['ask'], tick['bid']))
+      info("%s: %s ask=%s, bid=%s" % (tick['time'], tick['instrument'], tick['ask'], tick['bid']))
     elif 'heartbeat' in data:
       heartbeat = data['heartbeat']
-      print "%s: rate heartbeat" % heartbeat['time']
+      info("%s: rate heartbeat" % heartbeat['time'])
+    else:
+      warn("Unknown data successfully received")
 
 
   def on_error(self, data):
     # TODO: find out if a timestamp is delived here
-    print "an error occurred: %s" % data
+    error("an error occurred: %s" % data)
     self.disconnect()

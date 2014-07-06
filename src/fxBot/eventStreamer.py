@@ -17,6 +17,7 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
+from logging import info, warn, error
 from oandapy import Streamer
 
 
@@ -61,33 +62,35 @@ class EventStreamer(Streamer):
       #                          closed or reduced. Trade related fields are: id, units, pl,
       #                          interest.
       if transaction['type'] == "ORDER_FILLED":
-        print "%s: received event: %s" % (transaction['time'], transaction['type'])
+        warn("%s: received event: %s" % (transaction['time'], transaction['type']))
       elif transaction['type'] == "STOP_LOSS_FILLED":
-        print "%s: received event: %s" % (transaction['time'], transaction['type'])
+        warn("%s: received event: %s" % (transaction['time'], transaction['type']))
       elif transaction['type'] == "TAKE_PROFIT_FILLED":
-        print "%s: received event: %s" % (transaction['time'], transaction['type'])
+        warn("%s: received event: %s" % (transaction['time'], transaction['type']))
       elif transaction['type'] == "TRAILING_STOP_FILLED":
-        print "%s: received event: %s" % (transaction['time'], transaction['type'])
+        warn("%s: received event: %s" % (transaction['time'], transaction['type']))
       elif transaction['type'] == "MARGIN_CLOSEOUT":
-        print "%s: received event: %s" % (transaction['time'], transaction['type'])
+        warn("%s: received event: %s" % (transaction['time'], transaction['type']))
       elif transaction['type'] == "ORDER_CANCEL":
-        print "%s: received event: %s" % (transaction['time'], transaction['type'])
+        warn("%s: received event: %s" % (transaction['time'], transaction['type']))
       elif transaction['type'] == "MARGIN_CALL_ENTER":
-        print "%s: received event: %s" % (transaction['time'], transaction['type'])
+        warn("%s: received event: %s" % (transaction['time'], transaction['type']))
       elif transaction['type'] == "MARGIN_CALL_EXIT":
-        print "%s: received event: %s" % (transaction['time'], transaction['type'])
+        warn("%s: received event: %s" % (transaction['time'], transaction['type']))
       else:
-        print "%s: Unknown transaction event received: %s" % (transaction['time'],
-                                                              transaction['type'])
+        warn("%s: Unknown transaction event received: %s" % (transaction['time'],
+                                                             transaction['type']))
     # not sure if the API allows for heartbeat and transaction events at the same time (I think so),
     # but we don't care: if there is a transaction event we know something happened and we just
     # ignore the heartbeat (that's why we use elif)
     elif 'heartbeat' in data:
       heartbeat = data['heartbeat']
-      print "%s: event heartbeat" % heartbeat['time']
+      info("%s: event heartbeat" % heartbeat['time'])
+    else:
+      warn("Unknown data successfully received")
 
 
   def on_error(self, data):
     # TODO: find out if a timestamp is delived here
-    print "an error occurred: %s" % data
+    error("an error occurred: %s" % data)
     self.disconnect()

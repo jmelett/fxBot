@@ -17,26 +17,9 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
-from logging          import info, warn, error
 from threadedStreamer import ThreadedStreamer
 
 
 class RateStreamer(ThreadedStreamer):
   def __init__(self, token, queue, *args, **kwargs):
     ThreadedStreamer.__init__(self, queue, access_token=token, *args, **kwargs)
-
-
-  def on_success(self, data):
-    if 'tick' in data:
-      self.queue.put(data)
-    elif 'heartbeat' in data:
-      heartbeat = data['heartbeat']
-      info("%s: rate heartbeat" % heartbeat['time'])
-    else:
-      warn("Unknown data received: %s", data)
-
-
-  def on_error(self, data):
-    # TODO: find out if a timestamp is delived here
-    error("an error occurred: %s" % data)
-    self.disconnect()

@@ -80,14 +80,14 @@ class Program:
     widths = self.__queryWidths(accounts, {'title': idString,   'key': 'accountId'},
                                           {'title': nameString, 'key': 'accountName'})
 
-    print "%s %s %s" % (idString.ljust(widths[0]),
+    print("%s %s %s" % (idString.ljust(widths[0]),
                         nameString.ljust(widths[1]),
-                        currencyString)
+                        currencyString))
 
     for account in accounts:
-      print "%s %s %s" % (str(account['accountId']).ljust(widths[0]),
+      print("%s %s %s" % (str(account['accountId']).ljust(widths[0]),
                           str(account['accountName']).ljust(widths[1]),
-                          str(account['accountCurrency']))
+                          str(account['accountCurrency'])))
 
 
   def listCurrencies(self, account_id):
@@ -104,14 +104,14 @@ class Program:
     widths = self.__queryWidths(currencies, {'title': nameString, 'key': 'displayName'},
                                             {'title': pipString,  'key': 'pip'})
 
-    print "%s %s %s" % (nameString.ljust(widths[0]),
+    print("%s %s %s" % (nameString.ljust(widths[0]),
                         pipString.ljust(widths[1]),
-                        maxUnitsString)
+                        maxUnitsString))
 
     for currency in currencies:
-      print "%s %s %s" % (str(currency['displayName']).ljust(widths[0]),
+      print("%s %s %s" % (str(currency['displayName']).ljust(widths[0]),
                           str(currency['pip']).ljust(widths[1]),
-                          str(currency['maxTradeUnits']))
+                          str(currency['maxTradeUnits'])))
 
 
   def run(self, account_id):
@@ -129,22 +129,22 @@ class Program:
     widths = self.__queryWidths(history, {'title': timeString,  'key': 'time'},
                                          {'title': ema20String, 'key': 'ema20'})
 
-    print "EUR/USD:"
-    print "current prices: bid=%s, ask=%s" % currency.currentPrices()
-    print "historic data:"
+    print("EUR/USD:")
+    print("current prices: bid=%s, ask=%s" % currency.currentPrices())
+    print("historic data:")
 
-    print "%s %s %s" % (timeString.ljust(widths[0]),
+    print("%s %s %s" % (timeString.ljust(widths[0]),
                         ema20String.ljust(widths[1]),
-                        ema10String)
+                        ema10String))
 
     for value in history:
-      print "%s %s %s" % (str(value['time']).ljust(widths[0]),
+      print("%s %s %s" % (str(value['time']).ljust(widths[0]),
                           str(value['ema20']).ljust(widths[1])
                             if 'ema20' in value
                             else '<nil>'.ljust(widths[1]),
                           str(value['ema10'])
                             if 'ema10' in value
-                            else '<nil>')
+                            else '<nil>'))
 
     self.__eventStreamer.start(accountId=account_id, ignore_heartbeat=False)
     self.__rateStreamer.start(accountId=account_id, instruments="EUR_USD")

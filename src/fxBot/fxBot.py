@@ -19,11 +19,36 @@
 
 """A trading bot for the Forex market using Oanda's REST API."""
 
+from signal   import signal, SIGINT
 from optparse import OptionParser
 from program  import Program
 
 
+_program = None
+_verbose = False
+
+
+def _onInterrupt(signum, frame):
+  """Handle the SIGINT signal.
+
+    Parameters:
+      signum  Unused.
+      frame   Unused.
+  """
+  if _program:
+    _program.destroy()
+
+  if _verbose:
+    print "Shutting down..."
+
+  exit(0)
+
+
 def main():
+  """The main function parses the program arguments and reacts on them."""
+  global _verbose
+  global _program
+
   usage = "Usage: %prog [options] <access token>"
   version = "%prog 0.1"
 
@@ -36,17 +61,23 @@ def main():
                     help="list all available currencies")
   parser.add_option("-a", "--account-id", dest="account_id", default=None,
                     help="specify an account ID to use")
+  parser.add_option("-v", "--verbose", dest="verbose", default=False,
+                    action="store_true",
+                    help="increase verbosity of diagnostic output")
 
   (options, arguments) = parser.parse_args()
 
   if len(arguments) != 1:
     parser.error("invalid number of arguments")
 
-  token = arguments[0]
-  program = Program(token)
+  # register our custom signal handler for SIGINT to tear down our objects correctly
+  signal(SIGINT, _onInterrupt)
+
+  _verbose = options.verbose
+  _program = Program(arguments[0])
 
   if options.list_accounts:
-    program.listAccounts();
+    _program.listAccounts();
     exit(0)
 
   # all remaining paths require an account ID to be passed in
@@ -54,10 +85,10 @@ def main():
     parser.error("no account ID specified, use --account-id=<account ID>")
 
   if options.list_currencies:
-    program.listCurrencies(options.account_id);
+    _program.listCurrencies(options.account_id);
     exit(0)
 
-  program.run(options.account_id)
+  _program.run(options.account_id)
 
 
 if __name__ == '__main__':

@@ -28,21 +28,12 @@ class RateStreamer(ThreadedStreamer):
 
   def on_success(self, data):
     if 'tick' in data:
-      tick = data['tick']
-
-      # tick:
-      # instrument Name of the instrument.
-      # time       Time in a valid datetime format.
-      # bid        Bid price
-      # ask        Ask price
-      info("%s: %s ask=%s, bid=%s" % (tick['time'], tick['instrument'], tick['ask'], tick['bid']))
+      self.queue.put(data)
     elif 'heartbeat' in data:
       heartbeat = data['heartbeat']
       info("%s: rate heartbeat" % heartbeat['time'])
     else:
-      warn("Unknown data successfully received")
-
-    self.queue.put(data)
+      warn("Unknown data received: %s", data)
 
 
   def on_error(self, data):

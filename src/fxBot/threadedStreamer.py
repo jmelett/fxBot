@@ -1,4 +1,4 @@
-# rateStreamer.py
+# threadedStreamer.py
 
 #/***************************************************************************
 # *   Copyright (C) 2014 Daniel Mueller                                     *
@@ -17,35 +17,27 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
-from logging          import info, warn, error
-from threadedStreamer import ThreadedStreamer
+from oandapy   import Streamer
+from threading import Thread
 
 
-class RateStreamer(ThreadedStreamer):
-  def __init__(self, token, queue, *args, **kwargs):
-    ThreadedStreamer.__init__(self, queue, access_token=token, *args, **kwargs)
+def _start(self, *args, **kwargs):
+  Streamer.start(self, *args, **kwargs)
 
 
-  def on_success(self, data):
-    if 'tick' in data:
-      tick = data['tick']
-
-      # tick:
-      # instrument Name of the instrument.
-      # time       Time in a valid datetime format.
-      # bid        Bid price
-      # ask        Ask price
-      info("%s: %s ask=%s, bid=%s" % (tick['time'], tick['instrument'], tick['ask'], tick['bid']))
-    elif 'heartbeat' in data:
-      heartbeat = data['heartbeat']
-      info("%s: rate heartbeat" % heartbeat['time'])
-    else:
-      warn("Unknown data successfully received")
-
-    self.queue.put(data)
+class ThreadedStreamer(Streamer):
+  def __init__(self, queue, *args, **kwargs):
+    Streamer.__init__(self, *args, **kwargs)
+    self.queue = queue
 
 
-  def on_error(self, data):
-    # TODO: find out if a timestamp is delived here
-    error("an error occurred: %s" % data)
-    self.disconnect()
+  def start(self, *args, **kwargs):
+    self.__thread = Thread(target=_start, args=(self, ) + args, kwargs=kwargs)
+    # We have the problem how to terminate the streamer threads, e.g., when a signal occurred. We
+    # already call disconnect() on it which sets a flag to indicate to terminate the internal loop
+    # to quit but we are still stuck in some system call. The only solution from what I can tell
+    # (since we cannot forcefully terminate a thread nor adjust the Oanda API, nor hook into it to
+    # use poll/select and a mechanism such as set_wakeup_fd) is to run the streamer threads as
+    # daemons which means we do not wait for them to complete if the main thread exits.
+    self.__thread.setDaemon(True)
+    self.__thread.start()

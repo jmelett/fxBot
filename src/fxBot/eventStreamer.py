@@ -17,13 +17,13 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
-from logging import info, warn, error
-from oandapy import Streamer
+from logging          import info, warn, error
+from threadedStreamer import ThreadedStreamer
 
 
-class EventStreamer(Streamer):
-  def __init__(self, token, *args, **kwargs):
-    Streamer.__init__(self, access_token=token, *args, **kwargs)
+class EventStreamer(ThreadedStreamer):
+  def __init__(self, token, queue, *args, **kwargs):
+    ThreadedStreamer.__init__(self, queue, access_token=token, *args, **kwargs)
 
     # overwrite the URL to use -- the Streamer class can only query rate streams, no event streams
     # TODO: find out which URL to use in case of a live account
@@ -88,6 +88,8 @@ class EventStreamer(Streamer):
       info("%s: event heartbeat" % heartbeat['time'])
     else:
       warn("Unknown data successfully received")
+
+    self.queue.put(data)
 
 
   def on_error(self, data):

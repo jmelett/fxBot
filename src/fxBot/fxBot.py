@@ -19,7 +19,7 @@
 
 """A trading bot for the Forex market using OANDA's REST API."""
 
-from signal   import signal, SIGINT
+from signal   import signal, SIGINT, SIGTERM
 from logging  import basicConfig, WARNING
 from optparse import OptionParser
 from program  import Program
@@ -28,8 +28,8 @@ from program  import Program
 _program = None
 
 
-def _onInterrupt(signum, frame):
-  """Handle the SIGINT signal.
+def _onTerminate(signum, frame):
+  """Handle the SIGINT and SIGTERM signals.
 
     Parameters:
       signum  Unused.
@@ -78,7 +78,8 @@ def main():
   basicConfig(level=max(10, WARNING - options.verbosity * 10))
 
   # register our custom signal handler for SIGINT to tear down our objects correctly
-  signal(SIGINT, _onInterrupt)
+  signal(SIGINT,  _onTerminate)
+  signal(SIGTERM, _onTerminate)
 
   _program = Program(token=arguments[0])
 

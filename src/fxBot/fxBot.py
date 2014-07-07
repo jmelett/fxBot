@@ -20,7 +20,7 @@
 """A trading bot for the Forex market using OANDA's REST API."""
 
 from signal   import signal, pause, SIGINT, SIGTERM
-from logging  import basicConfig, WARNING
+from logging  import basicConfig, addLevelName, WARNING
 from optparse import OptionParser
 from program  import Program
 
@@ -82,7 +82,15 @@ def main():
   # INFO      20
   # DEBUG     10
   # NOTSET    0
-  basicConfig(level=max(10, WARNING - options.verbosity * 10))
+  # we redefine the names of the log levels that are printed
+  addLevelName(10, "[DD]")
+  addLevelName(20, "[II]")
+  addLevelName(30, "[WW]")
+  addLevelName(40, "[EE]")
+  addLevelName(50, "[XX]")
+
+  basicConfig(level=max(10, WARNING - options.verbosity * 10),
+              format='%(asctime)s %(levelname)s %(message)s')
 
   # register our custom signal handler for SIGINT to tear down our objects correctly
   signal(SIGINT,  _onTerminate)

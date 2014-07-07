@@ -62,9 +62,6 @@ class Currency:
       Notes:
         A currency does not necessarily have to be an actual currency pair -- any instrument
         tradeable on the market can be used.
-
-      TODO: we need a translation layer here: we want to pass in currencies as they are displayed
-            but for the Oanda API we need the correct identifier
     """
     self.__api      = api
     self.__currency = currency

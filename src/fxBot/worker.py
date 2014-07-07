@@ -17,22 +17,30 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
+from decimal   import Decimal
 from threading import Thread, Event
 from logging   import info, warn
 from Queue     import Queue
 
 
 class Worker(Thread):
-  def __init__(self):
-    '''Create a new worker thread.'''
+  def __init__(self, currencies):
+    '''Create a new worker thread.
+
+      Parameters:
+        currencies  Dictionary indexed by currency names containing dictionaries containing currency
+                    objects and associated strategies.
+    '''
 
     # Please note that we have full control over the termination of the worker thread, i.e., we can
     # wake it up at any time by putting a dummy item in the queue, so there is no need to make this
     # thread a daemon thread like the stream threads.
     Thread.__init__(self)
 
+    self.__currencies = currencies
     self.__queue = Queue()
     self.__destroy = Event()
+
 
   def handleTick(self, tick):
     '''Handle a tick received from the OANDA server.
@@ -40,14 +48,12 @@ class Worker(Thread):
       Parameters:
         tick  Dictionary containing timestamp, ask and bid prices, and more.
     '''
-
-    # tick:
-    # instrument Name of the instrument.
-    # time       Time in a valid datetime format.
-    # bid        Bid price
-    # ask        Ask price
-    info("%s: %s ask=%s, bid=%s" % (tick['time'], tick['instrument'], tick['ask'], tick['bid']))
-    # process the data item!
+    if tick['instrument'] in self.__currencies:
+      pair = self.__currencies[tick['instrument']]
+      pair['strategy'].onChange(pair['currency'], Decimal(tick['ask']), Decimal(tick['bid']))
+    else:
+      warn("Received tick for unhandled currency: %s: %s ask=%s, bid=%s"
+           % (tick['time'], tick['instrument'], tick['ask'], tick['bid']))
 
 
   def handleEvent(self, event):

@@ -101,21 +101,25 @@ class Program:
         account_id  The ID of the account for which to list the available currencies.
     """
     nameString = "name"
+    instrumentString = "instrument"
     pipString = "pip"
     maxUnitsString = "maximum trade units"
 
     currencies = self.__api.get_instruments(account_id).get('instruments')
     widths = self.__queryWidths(currencies, {'title': nameString, 'key': 'displayName'},
+                                            {'title': instrumentString, 'key': 'instrument'},
                                             {'title': pipString,  'key': 'pip'})
 
-    print("%s %s %s" % (nameString.ljust(widths[0]),
-                        pipString.ljust(widths[1]),
-                        maxUnitsString))
+    print("%s %s %s %s" % (nameString.ljust(widths[0]),
+                           instrumentString.ljust(widths[1]),
+                           pipString.ljust(widths[2]),
+                           maxUnitsString))
 
     for currency in currencies:
-      print("%s %s %s" % (str(currency['displayName']).ljust(widths[0]),
-                          str(currency['pip']).ljust(widths[1]),
-                          str(currency['maxTradeUnits'])))
+      print("%s %s %s %s" % (str(currency['displayName']).ljust(widths[0]),
+                             str(currency['instrument']).ljust(widths[1]),
+                             str(currency['pip']).ljust(widths[2]),
+                             str(currency['maxTradeUnits'])))
 
 
   def start(self, account_id):

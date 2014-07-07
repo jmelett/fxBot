@@ -19,10 +19,10 @@
 
 from oandapy       import API
 from currency      import Currency
+from strategy      import Strategy
 from worker        import Worker
 from eventStreamer import EventStreamer
 from rateStreamer  import RateStreamer
-from statistics    import calculateAvg, calculateEMA
 
 
 class Program:
@@ -33,16 +33,21 @@ class Program:
         token  An access token to use for interacting with OANDA's REST API.
     """
     self.__api = API(environment="practice", access_token=token)
-    self.__worker = Worker()
-    self.__eventStreamer = EventStreamer(token, self.__worker.queue())
-    self.__rateStreamer = RateStreamer(token, self.__worker.queue())
+    self.__worker = None
+    self.__rateStreamer = None
+    self.__eventStreamer = None
 
 
   def destroy(self):
     '''Destroy the program.'''
-    self.__worker.destroy()
-    self.__rateStreamer.disconnect()
-    self.__eventStreamer.disconnect()
+    if self.__worker:
+      self.__worker.destroy()
+
+    if self.__rateStreamer:
+      self.__rateStreamer.disconnect()
+
+    if self.__eventStreamer:
+      self.__eventStreamer.disconnect()
 
 
   def __queryWidths(self, dictionaries, *keys):
@@ -123,7 +128,7 @@ class Program:
                              str(instrument['maxTradeUnits'])))
 
 
-  def start(self, account_id):
+  def start(self, account_id, currencies):
     """Start the program.
 
       An invocation of this method causes the object to create the necessary infrastructure to
@@ -131,6 +136,7 @@ class Program:
 
       Parameters:
         account_id  The ID of the account which to use for interaction with the OANDA servers.
+        currencies  List of currencies managed by the program.
 
       Note:
         Python has a very limited signal handling mechanism in that only the main thread can receive
@@ -139,41 +145,20 @@ class Program:
         streamer uses them and so does the worker), we cannot perform any of this work synchronously
         here and risk to block. Instead, we create new threads for all tasks and return.
     """
-    timeString = "time"
-    ema20String = "EMA(20)"
-    ema10String = "EMA(10)"
+    # create a set of currency names we are interested in (removes potential duplicates)
+    currencySet = set([c.strip() for c in currencies.split(',')])
+    # for now we associate an empty Strategy with every currency
+    currencyDict = {c: {'currency': Currency(self.__api, c),
+                        'strategy': Strategy()} for c in currencySet}
 
-    currency = Currency(self.__api, "EUR_USD")
-    history = currency.history('1h', 30)
-
-    calculateAvg(history, 'open', 'close', 'avg')
-    calculateEMA(history, 10, 'avg', 'ema10')
-    calculateEMA(history, 20, 'avg', 'ema20')
-
-    widths = self.__queryWidths(history, {'title': timeString,  'key': 'time'},
-                                         {'title': ema20String, 'key': 'ema20'})
-
-    print("EUR/USD:")
-    print("current prices: ask=%s, bid=%s" % currency.currentPrices())
-    print("historic data:")
-
-    print("%s %s %s" % (timeString.ljust(widths[0]),
-                        ema20String.ljust(widths[1]),
-                        ema10String))
-
-    for value in history:
-      print("%s %s %s" % (str(value['time']).ljust(widths[0]),
-                          str(value['ema20']).ljust(widths[1])
-                            if 'ema20' in value
-                            else '<nil>'.ljust(widths[1]),
-                          str(value['ema10'])
-                            if 'ema10' in value
-                            else '<nil>'))
+    self.__worker = Worker(currencyDict)
+    self.__eventStreamer = EventStreamer(self.__api.access_token, self.__worker.queue())
+    self.__rateStreamer = RateStreamer(self.__api.access_token, self.__worker.queue())
 
     # now start up all our threads
     self.__worker.start()
     self.__eventStreamer.start(accountId=account_id, ignore_heartbeat=False)
-    self.__rateStreamer.start(accountId=account_id, instruments="EUR_USD")
+    self.__rateStreamer.start(accountId=account_id, instruments=currencies)
 
     # We are done, we exit here -- the worker thread as well as the streamer threads will continue
     # running. Note that this is only due to f*cked up Python signal handling.

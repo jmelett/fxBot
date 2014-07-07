@@ -114,7 +114,10 @@ def main():
     _program.listCurrencies(options.account_id, options.currencies);
     exit(0)
 
-  _program.start(options.account_id)
+  if not options.currencies:
+    parser.error("no currencies specified, use --currencies=<C1,C2,...,Cn>")
+
+  _program.start(options.account_id, options.currencies)
 
   # We must not exit here until we know that all threads are either torn down or are daemons anyway
   # (in which case they are forcefully shutdown when the program terminates). If we exit, nobody is

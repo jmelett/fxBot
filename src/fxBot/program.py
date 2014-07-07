@@ -94,32 +94,33 @@ class Program:
                           str(account['accountCurrency'])))
 
 
-  def listCurrencies(self, account_id):
+  def listCurrencies(self, account_id, currencies=None):
     """Print a list of all available currencies for the account with the given ID.
 
       Parameters:
         account_id  The ID of the account for which to list the available currencies.
+        currencies  (optional) Comma separated list of currencies to list more information about.
     """
     nameString = "name"
     instrumentString = "instrument"
     pipString = "pip"
     maxUnitsString = "maximum trade units"
 
-    currencies = self.__api.get_instruments(account_id).get('instruments')
-    widths = self.__queryWidths(currencies, {'title': nameString, 'key': 'displayName'},
-                                            {'title': instrumentString, 'key': 'instrument'},
-                                            {'title': pipString,  'key': 'pip'})
+    instruments = self.__api.get_instruments(account_id, instruments=currencies).get('instruments')
+    widths = self.__queryWidths(instruments, {'title': nameString, 'key': 'displayName'},
+                                             {'title': instrumentString, 'key': 'instrument'},
+                                             {'title': pipString,  'key': 'pip'})
 
     print("%s %s %s %s" % (nameString.ljust(widths[0]),
                            instrumentString.ljust(widths[1]),
                            pipString.ljust(widths[2]),
                            maxUnitsString))
 
-    for currency in currencies:
-      print("%s %s %s %s" % (str(currency['displayName']).ljust(widths[0]),
-                             str(currency['instrument']).ljust(widths[1]),
-                             str(currency['pip']).ljust(widths[2]),
-                             str(currency['maxTradeUnits'])))
+    for instrument in instruments:
+      print("%s %s %s %s" % (str(instrument['displayName']).ljust(widths[0]),
+                             str(instrument['instrument']).ljust(widths[1]),
+                             str(instrument['pip']).ljust(widths[2]),
+                             str(instrument['maxTradeUnits'])))
 
 
   def start(self, account_id):

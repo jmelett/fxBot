@@ -68,6 +68,8 @@ def main():
                     help="list all available currencies")
   parser.add_option("-a", "--account-id", dest="account_id", default=None,
                     help="specify an account ID to use")
+  parser.add_option("-c", "--currencies", dest="currencies", default=None,
+                    help="comma separated list of currencies to work with")
   parser.add_option("-v", "--verbose", dest="verbosity", default=0,
                     action="count",
                     help="increase verbosity of output")
@@ -109,7 +111,9 @@ def main():
     parser.error("no account ID specified, use --account-id=<account ID>")
 
   if options.list_currencies:
-    _program.listCurrencies(options.account_id);
+    # note that the currencies parameters is optional, so it is okay if the user did not specify any
+    # currencies
+    _program.listCurrencies(options.account_id, options.currencies);
     exit(0)
 
   _program.start(options.account_id)

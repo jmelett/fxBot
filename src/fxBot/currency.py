@@ -80,10 +80,10 @@ class Currency:
     """Retrieve the current bid and ask prices for this currency.
 
       Returns:
-        A tuple (bid,ask) of Decimals representing the bid and ask prices.
+        A tuple (ask,bid) of Decimals representing the ask and bid prices.
     """
     prices = self.__api.get_prices(instruments=self.__currency).get("prices")
-    return (Decimal(prices[0]['bid']), Decimal(prices[0]['ask']))
+    return (Decimal(prices[0]['ask']), Decimal(prices[0]['bid']))
 
 
   def history(self, granularity, count):

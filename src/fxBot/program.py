@@ -154,7 +154,7 @@ class Program:
                                          {'title': ema20String, 'key': 'ema20'})
 
     print("EUR/USD:")
-    print("current prices: bid=%s, ask=%s" % currency.currentPrices())
+    print("current prices: ask=%s, bid=%s" % currency.currentPrices())
     print("historic data:")
 
     print("%s %s %s" % (timeString.ljust(widths[0]),

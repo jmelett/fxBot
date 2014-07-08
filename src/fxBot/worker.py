@@ -38,7 +38,7 @@ class Worker(Thread):
     '''Handle a tick received from the OANDA server.
 
       Parameters:
-        tick  Dictionary containing timestamp, bid and ask prices, and more.
+        tick  Dictionary containing timestamp, ask and bid prices, and more.
     '''
 
     # tick:

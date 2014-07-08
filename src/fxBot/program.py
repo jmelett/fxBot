@@ -19,7 +19,7 @@
 
 from oandapy       import API
 from currency      import Currency
-from strategy      import Strategy
+from emaStrategy   import EmaStrategy
 from worker        import Worker
 from watchdog      import Watchdog
 from eventStreamer import EventStreamer
@@ -141,9 +141,9 @@ class Program:
     """
     # create a set of currency names we are interested in (removes potential duplicates)
     currencySet = set([c.strip() for c in currencies.split(',')])
-    # for now we associate an empty Strategy with every currency
+    # for now we associate an EmaStrategy with every currency
     currencyDict = {c: {'currency': Currency(self.__api, c),
-                        'strategy': Strategy()} for c in currencySet}
+                        'strategy': EmaStrategy()} for c in currencySet}
 
     self.__worker = Worker(currencyDict)
     self.__watchdog = Watchdog(currencyDict, self.__worker.queue())

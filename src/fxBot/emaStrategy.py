@@ -1,4 +1,4 @@
-# strategy.py
+# emaStrategy.py
 
 #/***************************************************************************
 # *   Copyright (C) 2014 Daniel Mueller                                     *
@@ -17,16 +17,50 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
+from logging    import warn
+from statistics import calculateAvg, calculateEMA
+from strategy   import Strategy
 
-class Strategy:
+
+class EmaStrategy(Strategy):
   def onChange(self, currency, time, ask, bid):
     """Handle a change in the currency's market value.
 
       Parameters:
         currency  The currency currently of interest.
         time      Time value when the change occurred, represented as datetime object.
-        ask       Latest ask price for the given currency (Decimal).
-        bid       Latest bid price for the given currency (Decimal).
+        ask       Latest ask price for the given currency.
+        bid       Latest bid price for the given currency.
     """
-    # derived classes may overwrite this method
-    return
+    #timeString = "time"
+    #ema20String = "EMA(20)"
+    #ema10String = "EMA(10)"
+
+    #history = currency.history('1h', 30)
+
+    #calculateAvg(history, 'open', 'close', 'avg')
+    #calculateEMA(history, 10, 'avg', 'ema10')
+    #calculateEMA(history, 20, 'avg', 'ema20')
+
+    warn("onChange: %s ask=%s bid=%s" % (currency.name(), ask, bid))
+
+    #widths = self.__queryWidths(history, {'title': timeString,  'key': 'time'},
+    #                                     {'title': ema20String, 'key': 'ema20'})
+
+    #print(currency.name())
+    #prices = currency.currentPrices()
+    #print("current prices: ask=%s, bid=%s" % (prices['ask'], prices['bid'])
+    #print("historic data:")
+
+    #print("%s %s %s" % (timeString.ljust(widths[0]),
+    #                    ema20String.ljust(widths[1]),
+    #                    ema10String))
+
+    #for value in history:
+    #  print("%s %s %s" % (str(value['time']).ljust(widths[0]),
+    #                      str(value['ema20']).ljust(widths[1])
+    #                        if 'ema20' in value
+    #                        else '<nil>'.ljust(widths[1]),
+    #                      str(value['ema10'])
+    #                        if 'ema10' in value
+    #                        else '<nil>'))

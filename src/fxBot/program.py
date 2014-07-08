@@ -21,6 +21,7 @@ from oandapy       import API
 from currency      import Currency
 from strategy      import Strategy
 from worker        import Worker
+from watchdog      import Watchdog
 from eventStreamer import EventStreamer
 from rateStreamer  import RateStreamer
 
@@ -34,6 +35,7 @@ class Program:
     """
     self.__api = API(environment="practice", access_token=token)
     self.__worker = None
+    self.__watchdog = None
     self.__rateStreamer = None
     self.__eventStreamer = None
 
@@ -48,6 +50,9 @@ class Program:
 
     if self.__eventStreamer:
       self.__eventStreamer.disconnect()
+
+    if self.__watchdog:
+      self.__watchdog.destroy()
 
 
   def __queryWidths(self, dictionaries, *keys):
@@ -152,11 +157,13 @@ class Program:
                         'strategy': Strategy()} for c in currencySet}
 
     self.__worker = Worker(currencyDict)
+    self.__watchdog = Watchdog(currencyDict, self.__worker.queue())
     self.__eventStreamer = EventStreamer(self.__api.access_token, self.__worker.queue())
     self.__rateStreamer = RateStreamer(self.__api.access_token, self.__worker.queue())
 
     # now start up all our threads
     self.__worker.start()
+    self.__watchdog.start()
     self.__eventStreamer.start(accountId=account_id, ignore_heartbeat=False)
     self.__rateStreamer.start(accountId=account_id, instruments=currencies)
 

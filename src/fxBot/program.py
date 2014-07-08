@@ -42,17 +42,10 @@ class Program:
 
   def destroy(self):
     '''Destroy the program.'''
-    if self.__worker:
-      self.__worker.destroy()
-
-    if self.__rateStreamer:
-      self.__rateStreamer.disconnect()
-
-    if self.__eventStreamer:
-      self.__eventStreamer.disconnect()
-
-    if self.__watchdog:
-      self.__watchdog.destroy()
+    self.__eventStreamer.disconnect() if self.__eventStreamer else None
+    self.__rateStreamer.disconnect()  if self.__rateStreamer else None
+    self.__watchdog.destroy()         if self.__watchdog else None
+    self.__worker.destroy()           if self.__worker else None
 
 
   def __queryWidths(self, dictionaries, *keys):
@@ -158,14 +151,14 @@ class Program:
 
     self.__worker = Worker(currencyDict)
     self.__watchdog = Watchdog(currencyDict, self.__worker.queue())
-    self.__eventStreamer = EventStreamer(self.__api.access_token, self.__worker.queue())
     self.__rateStreamer = RateStreamer(self.__api.access_token, self.__worker.queue())
+    self.__eventStreamer = EventStreamer(self.__api.access_token, self.__worker.queue())
 
     # now start up all our threads
     self.__worker.start()
     self.__watchdog.start()
-    self.__eventStreamer.start(accountId=account_id, ignore_heartbeat=False)
     self.__rateStreamer.start(accountId=account_id, instruments=currencies)
+    self.__eventStreamer.start(accountId=account_id, ignore_heartbeat=False)
 
     # We are done, we exit here -- the worker thread as well as the streamer threads will continue
     # running. Note that this is only due to f*cked up Python signal handling.

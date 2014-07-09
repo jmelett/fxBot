@@ -58,11 +58,11 @@ class Watchdog(Thread):
         # TODO: check if a tick is required (because none has been received for a long time) and
         #       only send it if so
         currency = pair['currency']
-        time, ask, bid = currency.currentPrices()
+        prices = currency.currentPrices()
         self.__queue.put({'instrument': currency.name(),
-                          'ask': ask,
-                          'bid': bid,
-                          'time': time})
+                          'time': prices['time'],
+                          'ask': prices['ask'],
+                          'bid': prices['bid']})
 
 
   def destroy(self):

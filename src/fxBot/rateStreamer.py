@@ -17,9 +17,22 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
+from currency         import parsePrice
 from threadedStreamer import ThreadedStreamer
 
 
 class RateStreamer(ThreadedStreamer):
   def __init__(self, token, queue, *args, **kwargs):
     ThreadedStreamer.__init__(self, queue, access_token=token, *args, **kwargs)
+
+
+  def on_success(self, data):
+    """Handle received 'tick' data.
+
+      Parameters:
+        data  Data received from the server. Represented as dict object containing 'instrument'
+              string describing the currency, a 'time' string, an 'ask' price, and a 'bid' price.
+    """
+    price = parsePrice(data)
+    price['instrument'] = data['instrument']
+    self.queue.put(price)

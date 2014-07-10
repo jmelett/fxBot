@@ -21,12 +21,13 @@ from logging import warn
 
 
 class Strategy:
-  def onChange(self, currency, ask, bid):
+  def onChange(self, currency, time, ask, bid):
     """Handle a change in the currency's market value.
 
       Parameters:
         currency  The currency currently of interest.
-        ask       Latest ask price for the given currency.
-        bid       Latest bid price for the given currency.
+        time      Time value when the change occurred, represented as datetime object.
+        ask       Latest ask price for the given currency (Decimal).
+        bid       Latest bid price for the given currency (Decimal).
     """
     warn("onChange: %s ask=%s bid=%s" % (currency.name(), ask, bid))

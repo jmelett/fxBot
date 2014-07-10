@@ -46,11 +46,13 @@ class Worker(Thread):
     '''Handle a tick received from the OANDA server.
 
       Parameters:
-        tick  Dictionary containing timestamp, ask and bid prices, and more.
+        tick  Dictionary containing timestamp string, time (datetime object), ask and bid prices
+              (both Decimal objects).
     '''
     if tick['instrument'] in self.__currencies:
       pair = self.__currencies[tick['instrument']]
-      pair['strategy'].onChange(pair['currency'], Decimal(tick['ask']), Decimal(tick['bid']))
+      pair['strategy'].onChange(pair['currency'], tick['time'],
+                                tick['ask'], tick['bid'])
     else:
       warn("Received tick for unhandled currency: %s: %s ask=%s, bid=%s"
            % (tick['time'], tick['instrument'], tick['ask'], tick['bid']))

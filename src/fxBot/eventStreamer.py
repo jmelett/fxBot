@@ -27,3 +27,13 @@ class EventStreamer(ThreadedStreamer):
     # overwrite the URL to use -- the Streamer class can only query rate streams, no event streams
     # TODO: find out which URL to use in case of a live account
     self.api_url = 'https://stream-fxpractice.oanda.com/v1/events'
+
+
+  def on_success(self, data):
+    """Handle received event data.
+
+      Parameters:
+        data  Data received from the server. May be a heartbeat message or an event such as a filled
+              order.
+    """
+    self.queue.put(data)

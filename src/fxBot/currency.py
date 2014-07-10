@@ -17,7 +17,8 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
-from decimal import Decimal
+from decimal         import Decimal
+from datetimeRfc3339 import parseDate
 
 
 """Dictionary for mapping granularities from user-friendly ones to OANDA specific ones."""
@@ -48,6 +49,21 @@ _granularities = {
   # Start of month alignment (First day of the month)
   '1M':  'M',   # 1 Month
 }
+
+
+def parsePrice(price):
+  """Parse a price value.
+
+    Parameters:
+      price  A dict object containing a 'time' value (string) and two prices, 'ask' and 'bid' (both
+             strings).
+
+    Returns:
+      A dict object containing 'time' (datetime) and 'ask' and 'bid' (both Decimal objects).
+  """
+  return {'time': parseDate(price['time']),
+          'ask':  Decimal(price['ask']),
+          'bid':  Decimal(price['bid'])}
 
 
 class Currency:
@@ -85,9 +101,7 @@ class Currency:
         ('ask' and 'bid', respectively).
     """
     prices = self.__api.get_prices(instruments=self.__currency).get("prices")
-    return {'time': prices[0]['time'],
-            'ask': Decimal(prices[0]['ask']),
-            'bid': Decimal(prices[0]['bid'])}
+    return parsePrice(prices[0])
 
 
   def history(self, granularity, count):
@@ -120,7 +134,7 @@ class Currency:
     # entries are at the lower indices
     values = []
     for value in history:
-      values = [{'time': value['time'],
+      values = [{'time': parseDate(value['time']),
                  'open': Decimal(value['openMid']),
                  'close': Decimal(value['closeMid'])}] + values
 

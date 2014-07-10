@@ -45,8 +45,13 @@ class ThreadedStreamer(Streamer):
 
 
   def on_success(self, data):
-    """Handle received 'tick' data."""
-    self.queue.put(data)
+    """Handle received data.
+
+      Parameters:
+        data  Data received from the server. Format, type, and meaning differ among subclasses.
+    """
+    # derived classes may overwrite this method
+    return
 
 
   def on_error(self, data):

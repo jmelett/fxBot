@@ -22,8 +22,9 @@
 from signal   import signal, pause, SIGINT, SIGTERM
 from logging  import basicConfig, addLevelName, WARNING
 from optparse import OptionParser
-from program  import Program
 from oandapy  import API
+from program  import Program
+from server   import Server
 
 
 _program = None
@@ -101,7 +102,10 @@ def main():
   signal(SIGINT,  _onTerminate)
   signal(SIGTERM, _onTerminate)
 
-  _program = Program(API(environment="practice", access_token=arguments[0]))
+  api = API(environment="practice", access_token=arguments[0])
+  server = Server(api)
+
+  _program = Program(server)
 
   if options.list_accounts:
     _program.listAccounts();

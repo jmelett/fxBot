@@ -73,11 +73,11 @@ def parsePrice(price):
 
 
 class Currency:
-  def __init__(self, api, currency):
+  def __init__(self, server, currency):
     """Create new Currency object representing one currency being traded.
 
       Parameters:
-        api       The API object to use for interaction with a server.
+        server    A server object to use for interaction with one of OANDA's servers.
         currency  String representing a currency pair. Note that the string is directly passed to
                   the OANDA API without any translation so it must correspond to a string as used by
                   this API.
@@ -86,7 +86,7 @@ class Currency:
         A currency does not necessarily have to be an actual currency pair -- any instrument
         tradeable on the market can be used.
     """
-    self.__api = api
+    self.__server = server
     self.__currency = currency
     # dict indexed by the granularity we are looking for
     # {
@@ -115,8 +115,8 @@ class Currency:
         A dict object containing the time ('time') as well as the associated ask and bid prices
         ('ask' and 'bid', respectively).
     """
-    prices = self.__api.get_prices(instruments=self.__currency).get("prices")
-    return parsePrice(prices[0])
+    prices = self.__server.currentPrices(self.__currency)
+    return parsePrice(prices)
 
 
   def history(self, granularity, count):
@@ -168,13 +168,13 @@ class Currency:
           return data['data'][0:count]
 
     # there is no or to few history data in our cache, get the history from the server
-    history = self.__api.get_history(instrument=self.__currency,
-                                     granularity=granularityString,
-                                     #start=...,
-                                     #end=datetime.now().isoformat("T") + "Z",
-                                     #includeFirst="false",
-                                     candleFormat="midpoint",
-                                     count=count).get("candles")
+    history = self.__server.history(instrument=self.__currency,
+                                    granularity=granularityString,
+                                    #start=...,
+                                    #end=datetime.now().isoformat("T") + "Z",
+                                    #includeFirst="false",
+                                    candleFormat="midpoint",
+                                    count=count)
 
     # create our own list of dicts with our own set of indices and a reverse ordering where the newest
     # entries are at the lower indices

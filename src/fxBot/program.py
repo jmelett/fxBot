@@ -17,7 +17,6 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
-from oandapy       import API
 from currency      import Currency
 from strategy      import Strategy
 from worker        import Worker
@@ -27,13 +26,13 @@ from rateStreamer  import RateStreamer
 
 
 class Program:
-  def __init__(self, token):
+  def __init__(self, api):
     """Create new Program object using the given access token.
 
       Parameters:
-        token  An access token to use for interacting with OANDA's REST API.
+        api  An object to use for interacting with OANDA's REST API.
     """
-    self.__api = API(environment="practice", access_token=token)
+    self.__api = api
     self.__worker = None
     self.__watchdog = None
     self.__rateStreamer = None

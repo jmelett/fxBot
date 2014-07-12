@@ -43,7 +43,7 @@ class Worker(Thread):
 
 
   def handleTick(self, tick):
-    '''Handle a tick received from the Oanda server.
+    '''Handle a tick received from the OANDA server.
 
       Parameters:
         tick  Dictionary containing timestamp string, time (datetime object), ask and bid prices
@@ -59,7 +59,7 @@ class Worker(Thread):
 
 
   def handleEvent(self, event):
-    '''Handle an event received from the Oanda server.
+    '''Handle an event received from the OANDA server.
 
       Parameters:
         event  Dictionary defining an event. The value of the 'type' should be investigated to get

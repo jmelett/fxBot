@@ -6,7 +6,7 @@ infrastructure provided by the *OANDA Corporation*. The program relies on
 *OANDA's REST API*. Its main purpose is to provide a framework allowing for easy
 creation, execution, and backtesting of various trading strategies.
 
-A basic guide to setting up your *OANDA* account can be found in the [Oanda
+A basic guide to setting up your *OANDA* account can be found in the [OANDA
 Developer Docs](http://developer.oanda.com/docs/).
 
 

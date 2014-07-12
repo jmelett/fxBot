@@ -150,6 +150,6 @@ class Worker(Thread):
     '''Retrieve the queue on which this worker opperates.
 
       Returns:
-        Queue object on which this thread waits for new work to be processed.
+        A queue object on which this thread waits for new work to be processed.
     '''
     return self.__queue

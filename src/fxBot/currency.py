@@ -168,13 +168,7 @@ class Currency:
           return data['data'][0:count]
 
     # there is no or to few history data in our cache, get the history from the server
-    history = self.__server.history(instrument=self.__currency,
-                                    granularity=granularityString,
-                                    #start=...,
-                                    #end=datetime.now().isoformat("T") + "Z",
-                                    #includeFirst="false",
-                                    candleFormat="midpoint",
-                                    count=count)
+    history = self.__server.history(self.__currency, granularityString, count)
 
     # create our own list of dicts with our own set of indices and a reverse ordering where the newest
     # entries are at the lower indices

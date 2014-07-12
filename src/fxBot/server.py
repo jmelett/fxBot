@@ -126,7 +126,7 @@ class Server:
           'complete': true
         }]
     """
-    return self.__api.get_history(instrument=self.__currency,
+    return self.__api.get_history(instrument=currency,
                                   granularity=granularity,
                                   #start=...,
                                   #end=datetime.now().isoformat('T') + 'Z',

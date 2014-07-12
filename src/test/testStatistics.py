@@ -1,4 +1,4 @@
-# TestFxBot.py
+# testStatistics.py
 
 #/***************************************************************************
 # *   Copyright (C) 2014 Daniel Mueller                                     *
@@ -22,7 +22,7 @@ from decimal    import Decimal
 from unittest   import TestCase, main
 
 
-class TestFxBot(TestCase):
+class TestStatistics(TestCase):
   def setUp(self):
     self.values1 =                [ {'avg': Decimal(0.1)} ]
     self.values2 = self.values1 + [ {'avg': Decimal(0.3)} ]

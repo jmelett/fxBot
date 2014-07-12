@@ -26,13 +26,13 @@ from rateStreamer  import RateStreamer
 
 
 class Program:
-  def __init__(self, api):
+  def __init__(self, server):
     """Create new Program object using the given access token.
 
       Parameters:
-        api  An object to use for interacting with OANDA's REST API.
+        server  An object to use for interacting with an OANDA server.
     """
-    self.__api = api
+    self.__server = server
     self.__worker = None
     self.__watchdog = None
     self.__rateStreamer = None
@@ -82,7 +82,7 @@ class Program:
     nameString = "name"
     currencyString = "currency"
 
-    accounts = self.__api.get_accounts().get("accounts")
+    accounts = self.__server.accounts()
     widths = self.__queryWidths(accounts, {'title': idString,   'key': 'accountId'},
                                           {'title': nameString, 'key': 'accountName'})
 
@@ -108,7 +108,7 @@ class Program:
     pipString = "pip"
     maxUnitsString = "maximum trade units"
 
-    instruments = self.__api.get_instruments(account_id, instruments=currencies).get('instruments')
+    instruments = self.__server.instruments(account_id, currencies)
     widths = self.__queryWidths(instruments, {'title': nameString, 'key': 'displayName'},
                                              {'title': instrumentString, 'key': 'instrument'},
                                              {'title': pipString,  'key': 'pip'})
@@ -145,13 +145,13 @@ class Program:
     # create a set of currency names we are interested in (removes potential duplicates)
     currencySet = set([c.strip() for c in currencies.split(',')])
     # for now we associate an empty Strategy with every currency
-    currencyDict = {c: {'currency': Currency(self.__api, c),
+    currencyDict = {c: {'currency': Currency(self.__server, c),
                         'strategy': Strategy()} for c in currencySet}
 
     self.__worker = Worker(currencyDict)
     self.__watchdog = Watchdog(currencyDict, self.__worker.queue())
-    self.__rateStreamer = RateStreamer(self.__api.access_token, self.__worker.queue())
-    self.__eventStreamer = EventStreamer(self.__api.access_token, self.__worker.queue())
+    self.__rateStreamer = RateStreamer(self.__server.token(), self.__worker.queue())
+    self.__eventStreamer = EventStreamer(self.__server.token(), self.__worker.queue())
 
     # now start up all our threads
     self.__worker.start()

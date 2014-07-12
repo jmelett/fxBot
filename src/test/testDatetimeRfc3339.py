@@ -1,4 +1,4 @@
-# TestDatetimeRfc3339.py
+# testDatetimeRfc3339.py
 
 #/***************************************************************************
 # *   Copyright (C) 2014 Daniel Mueller                                     *

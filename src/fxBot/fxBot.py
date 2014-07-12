@@ -17,7 +17,7 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
-"""A trading bot for the Forex market using Oanda's REST API."""
+"""A trading bot for the Forex market using OANDA's REST API."""
 
 from signal   import signal, pause, SIGINT, SIGTERM
 from logging  import basicConfig, addLevelName, WARNING

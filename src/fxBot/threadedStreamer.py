@@ -37,7 +37,7 @@ class ThreadedStreamer(Streamer):
     # We have the problem how to terminate the streamer threads, e.g., when a signal occurred. We
     # already call disconnect() on it which sets a flag to indicate to terminate the internal loop
     # to quit but we are still stuck in some system call. The only solution from what I can tell
-    # (since we cannot forcefully terminate a thread nor adjust the Oanda API, nor hook into it to
+    # (since we cannot forcefully terminate a thread nor adjust the OANDA API, nor hook into it to
     # use poll/select and a mechanism such as set_wakeup_fd) is to run the streamer threads as
     # daemons which means we do not wait for them to complete if the main thread exits.
     self.__thread.setDaemon(True)

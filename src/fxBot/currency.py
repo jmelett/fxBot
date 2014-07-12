@@ -56,7 +56,7 @@ def parsePrice(price):
 
     Parameters:
       price  A dict object containing a 'time' value (string) and two prices, 'ask' and 'bid' (both
-             strings.
+             strings).
 
     Returns:
       A dict object containing 'time' (datetime) and 'ask' and 'bid' (both Decimal objects).

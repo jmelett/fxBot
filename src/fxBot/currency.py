@@ -23,7 +23,7 @@ from datetime        import datetime, timedelta
 from datetimeRfc3339 import parseDate
 
 
-"""Dictionary for mapping granularities from user-friendly ones to Oanda specific ones."""
+"""Dictionary for mapping granularities from user-friendly ones to OANDA specific ones."""
 _granularities = {
   # Top of the minute alignment.
   '5s':  {'string': 'S5',  'time': timedelta(seconds=5)},
@@ -77,15 +77,16 @@ class Currency:
     """Create new Currency object representing one currency being traded.
 
       Parameters:
+        api       The API object to use for interaction with a server.
         currency  String representing a currency pair. Note that the string is directly passed to
-                  the Oanda API without any translation so it must correspond to a string as used by
+                  the OANDA API without any translation so it must correspond to a string as used by
                   this API.
 
       Notes:
         A currency does not necessarily have to be an actual currency pair -- any instrument
         tradeable on the market can be used.
     """
-    self.__api      = api
+    self.__api = api
     self.__currency = currency
     # dict indexed by the granularity we are looking for
     # {
@@ -126,11 +127,15 @@ class Currency:
        requests to the server.
 
       Parameters:
-        count  Amount of historic datapoints to retrieve.
+        granularity  The granularity of the historic data to query.
+        count        Amount of historic datapoints to retrieve.
 
       Returns:
         A list of dicts of the form {time: string, open: Decimal, close: Decimal} representing
         values at specific instances in time.
+
+      Notes:
+        All valid granularities can be found as the keys of the '_granularities' dict object.
 
       TODO: The caching approach still suffers from one problem: there is a potentially large gap
             between our system's current time and the server time. The data we receive is aligned
@@ -165,9 +170,9 @@ class Currency:
     # there is no or to few history data in our cache, get the history from the server
     history = self.__api.get_history(instrument=self.__currency,
                                      granularity=granularityString,
-                                     #start=
-                                     #end=datetime.now().isoformat("T"),
-                                     #includeFirst=True,
+                                     #start=...,
+                                     #end=datetime.now().isoformat("T") + "Z",
+                                     #includeFirst="false",
                                      candleFormat="midpoint",
                                      count=count).get("candles")
 

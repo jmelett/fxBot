@@ -18,3 +18,6 @@ Developer Docs](http://developer.oanda.com/docs/).
   - If you are using [Gentoo Linux](https://www.gentoo.org/), there is also an
     [ebuild](https://github.com/d-e-s-o/oandapy-ebuild) available that you can
     use directly.
+- **fxBot** contains several unit tests
+  - to make use of all of them the [mock](https://pypi.python.org/pypi/mock)
+    module is required

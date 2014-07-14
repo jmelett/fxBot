@@ -63,11 +63,9 @@ def main():
 
   parser = OptionParser(usage, version=version)
   parser.add_option("--list-accounts", dest="list_accounts", default=False,
-                    action="store_true",
-                    help="list all of a user's accounts")
+                    action="store_true", help="list all of a user's accounts")
   parser.add_option("--list-currencies", dest="list_currencies", default=False,
-                    action="store_true",
-                    help="list all available currencies")
+                    action="store_true", help="list all available currencies")
   parser.add_option("-a", "--account-id", dest="account_id", default=None,
                     help="specify an account ID to use")
   parser.add_option("-c", "--currencies", dest="currencies", default=None,

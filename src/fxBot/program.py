@@ -55,45 +55,35 @@ class Program:
 
       Parameters:
         dictionaries  A list of dictionaries.
-        keys          A list of dicts used to index into 'dictionaries'. Aach dictionary has to
-                      contain two key-value pairs: The value of 'title' directly represents the
-                      title of the column.
-                      The value of 'key' is used to index into each dict of the dictionaries
-                      argument to retrieve values to put into the column.
+        keys          A list of keys to index into the given list of dictionaries to retrieve the
+                      actual values to put into the column.
 
       Returns:
         A list of widths each being the maximum width of all the values retrieved when using all the
         given keys on each of the dictionaries.
     """
-    widths = [len(key['title']) for key in keys]
+    widths = [0 for key in keys]
 
     for dictionary in dictionaries:
       for i in range(len(keys)):
         # we assume that if a key is not present nothing will be printed
-        if keys[i]['key'] in dictionary:
-          widths[i] = max(widths[i], len(str(dictionary[keys[i]['key']])))
+        if keys[i] in dictionary:
+          widths[i] = max(widths[i], len(str(dictionary[keys[i]])))
 
     return widths
 
 
   def listAccounts(self):
     """List all available accounts."""
-    idString = "id"
-    nameString = "name"
-    currencyString = "currency"
+    titles = [{'accountId': 'id', 'accountName': 'name', 'accountCurrency': 'currency'}]
 
-    accounts = self.__server.accounts()
-    widths = self.__queryWidths(accounts, {'title': idString,   'key': 'accountId'},
-                                          {'title': nameString, 'key': 'accountName'})
-
-    print("%s %s %s" % (idString.ljust(widths[0]),
-                        nameString.ljust(widths[1]),
-                        currencyString))
+    accounts = titles + self.__server.accounts()
+    widths = self.__queryWidths(accounts, 'accountId', 'accountName', 'accountCurrency')
 
     for account in accounts:
       print("%s %s %s" % (str(account['accountId']).ljust(widths[0]),
                           str(account['accountName']).ljust(widths[1]),
-                          str(account['accountCurrency'])))
+                          str(account['accountCurrency']).ljust(widths[2])))
 
 
   def listCurrencies(self, account_id, currencies=None):
@@ -103,26 +93,16 @@ class Program:
         account_id  The ID of the account for which to list the available currencies.
         currencies  (optional) Comma separated list of currencies to list more information about.
     """
-    nameString = "name"
-    instrumentString = "instrument"
-    pipString = "pip"
-    maxUnitsString = "maximum trade units"
-
-    instruments = self.__server.instruments(account_id, currencies)
-    widths = self.__queryWidths(instruments, {'title': nameString, 'key': 'displayName'},
-                                             {'title': instrumentString, 'key': 'instrument'},
-                                             {'title': pipString,  'key': 'pip'})
-
-    print("%s %s %s %s" % (nameString.ljust(widths[0]),
-                           instrumentString.ljust(widths[1]),
-                           pipString.ljust(widths[2]),
-                           maxUnitsString))
+    titles = [{'displayName': 'name', 'instrument': 'instrument', 'pip': 'pip',
+               'maxTradeUnits': 'maximum trade units'}]
+    instruments = titles + self.__server.instruments(account_id, currencies)
+    widths = self.__queryWidths(instruments, 'displayName', 'instrument', 'pip', 'maxTradeUnits')
 
     for instrument in instruments:
       print("%s %s %s %s" % (str(instrument['displayName']).ljust(widths[0]),
                              str(instrument['instrument']).ljust(widths[1]),
                              str(instrument['pip']).ljust(widths[2]),
-                             str(instrument['maxTradeUnits'])))
+                             str(instrument['maxTradeUnits']).ljust(widths[3])))
 
 
   def start(self, account_id, currencies):

@@ -133,3 +133,34 @@ class Server:
                                   #includeFirst='false',
                                   candleFormat='midpoint',
                                   count=count).get('candles')
+
+
+  def trades(self, account_id):
+    """Query the server for the currently active trades.
+
+      Parameters:
+        account_id  The ID of the account for which to list the currently active trades.
+
+      Returns:
+        A list of dicts representing the currently open trades. Each dict has
+        the following keys: 'id', 'time', 'instrument', 'units', 'side',
+        'price', 'stopLoss', 'takeProfit', 'trailingStop', and 'trailingAmount'.
+
+      Examples:
+        A possible return value might look like this:
+       [{
+         'id': 612021234,
+         'time': '2014-07-14T17:21:26.000000Z',
+         'instrument': 'USB05Y_USD',
+         'units': 80,
+         'side': 'sell',
+         'price': 119.895,
+         'stopLoss': 120.15,
+         'takeProfit': 119.4,
+         'trailingStop': 0,
+         'trailingAmount': 0
+        }]
+
+      TODO: handle pagination correctly
+    """
+    return self.__api.get_trades(account_id=account_id).get('trades')

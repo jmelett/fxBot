@@ -105,6 +105,31 @@ class Program:
                              str(instrument['maxTradeUnits']).ljust(widths[3])))
 
 
+  def listTrades(self, account_id):
+    """Print a list of all currently active trades.
+
+      Parameters:
+        account_id  The ID of the account for which to list the trades.
+    """
+    titles = [{'id': 'id', 'instrument': 'currency', 'units': 'units',
+               'side': 'side', 'price': 'price', 'stopLoss': 'SL',
+               'takeProfit': 'TP', 'trailingStop': 'TS'}]
+
+    trades = titles + self.__server.trades(account_id)
+    widths = self.__queryWidths(trades, 'id', 'instrument', 'units', 'side', 'price',
+                                        'stopLoss', 'takeProfit', 'trailingStop')
+
+    for trade in trades:
+      print("%s %s %s %s %s %s %s %s" % (str(trade['id']).ljust(widths[0]),
+                                         str(trade['instrument']).ljust(widths[1]),
+                                         str(trade['units']).ljust(widths[2]),
+                                         str(trade['side']).ljust(widths[3]),
+                                         str(trade['price']).ljust(widths[4]),
+                                         str(trade['stopLoss']).ljust(widths[5]),
+                                         str(trade['takeProfit']).ljust(widths[6]),
+                                         str(trade['trailingStop']).ljust(widths[7])))
+
+
   def start(self, account_id, currencies):
     """Start the program.
 

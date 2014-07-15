@@ -159,7 +159,7 @@ class Server:
          'stopLoss': 120.15,
          'takeProfit': 119.4,
          'trailingStop': 0,
-         'trailingAmount': 0
+         'trailingAmount': 0,
         }]
 
       TODO: handle pagination correctly

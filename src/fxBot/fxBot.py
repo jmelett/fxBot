@@ -66,6 +66,8 @@ def main():
                     action="store_true", help="list all of a user's accounts")
   parser.add_option("--list-currencies", dest="list_currencies", default=False,
                     action="store_true", help="list all available currencies")
+  parser.add_option("--list-trades", dest="list_trades", default=False,
+                    action="store_true", help="list all currently active trades")
   parser.add_option("-a", "--account-id", dest="account_id", default=None,
                     help="specify an account ID to use")
   parser.add_option("-c", "--currencies", dest="currencies", default=None,
@@ -117,6 +119,10 @@ def main():
     # note that the currencies parameters is optional, so it is okay if the user did not specify any
     # currencies
     _program.listCurrencies(options.account_id, options.currencies);
+    exit(0)
+
+  if options.list_trades:
+    _program.listTrades(options.account_id);
     exit(0)
 
   if not options.currencies:

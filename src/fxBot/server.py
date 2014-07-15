@@ -65,15 +65,16 @@ class Server:
 
       Returns:
         A list of dict objects representing all instruments available on the given account or the
-        ones listed, respectively. Each dict object contains the following keys:
+        ones listed, respectively. Each dict object contains the following keys: 'instrument',
+        'displayName', 'pip', 'maxTradeUnits'.
 
       Examples:
         A possible return value might look like this:
         [{
-          'pip': '0.01',
           'instrument': 'XAU_USD',
+          'displayName': 'Gold',
+          'pip': '0.01',
           'maxTradeUnits': 1000,
-          'displayName': 'Gold'
         }]
     """
     return self.__api.get_instruments(account_id, instruments=currencies).get('instruments')
@@ -96,7 +97,7 @@ class Server:
           'time': '2014-07-11T20:59:58.718193Z',
           'ask': 1339.211,
           'bid': 1336.661,
-          'status': 'halted'
+          'status': 'halted',
         }
     """
     return self.__api.get_prices(instruments=currency).get('prices')[0]
@@ -123,7 +124,7 @@ class Server:
           'lowMid': 1.364275,
           'closeMid': 1.365315,
           'volume': 28242,
-          'complete': true
+          'complete': true,
         }]
     """
     return self.__api.get_history(instrument=currency,

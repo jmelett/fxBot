@@ -88,7 +88,7 @@ class Server:
 
       Returns:
         A dict object representing the current prices. It contains the following keys: 'instrument',
-        'time', 'ask', 'bid', and 'status'.
+        'time', 'ask', 'bid', and (potentially) 'status'.
 
       Examples:
         A possible return value might look like this:
@@ -99,6 +99,10 @@ class Server:
           'bid': 1336.661,
           'status': 'halted',
         }
+
+      Notes:
+        The 'status' key (whose corresponding value may only be 'halted') is only available if the
+        currency is currently not being traded.
     """
     return self.__api.get_prices(instruments=currency).get('prices')[0]
 

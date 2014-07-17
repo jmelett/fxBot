@@ -136,6 +136,9 @@ class Program:
       An invocation of this method causes the object to create the necessary infrastructure to
       subscribe for events and react on them.
 
+      Parameters:
+        account_id  The ID of the account which to use for interaction with the OANDA servers.
+
       Note:
         Python has a very limited signal handling mechanism in that only the main thread can receive
         signals. In addition, it will receive/dispatch them only if it is actually running and not

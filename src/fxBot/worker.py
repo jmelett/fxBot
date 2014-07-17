@@ -76,8 +76,6 @@ class Worker(Thread):
         more details on the type of event.
     '''
 
-    transaction = data['transaction']
-
     # transaction:
     # id                       Transaction ID
     # accountId                Account ID
@@ -105,25 +103,24 @@ class Worker(Thread):
     # tradeReduced             This object is appended to the json response if a trade has been
     #                          closed or reduced. Trade related fields are: id, units, pl,
     #                          interest.
-    if transaction['type'] == "ORDER_FILLED":
-      warn("%s: received event: %s" % (transaction['time'], transaction['type']))
-    elif transaction['type'] == "STOP_LOSS_FILLED":
-      warn("%s: received event: %s" % (transaction['time'], transaction['type']))
-    elif transaction['type'] == "TAKE_PROFIT_FILLED":
-      warn("%s: received event: %s" % (transaction['time'], transaction['type']))
-    elif transaction['type'] == "TRAILING_STOP_FILLED":
-      warn("%s: received event: %s" % (transaction['time'], transaction['type']))
-    elif transaction['type'] == "MARGIN_CLOSEOUT":
-      warn("%s: received event: %s" % (transaction['time'], transaction['type']))
-    elif transaction['type'] == "ORDER_CANCEL":
-      warn("%s: received event: %s" % (transaction['time'], transaction['type']))
-    elif transaction['type'] == "MARGIN_CALL_ENTER":
-      warn("%s: received event: %s" % (transaction['time'], transaction['type']))
-    elif transaction['type'] == "MARGIN_CALL_EXIT":
-      warn("%s: received event: %s" % (transaction['time'], transaction['type']))
+    if event['type'] == "ORDER_FILLED":
+      warn("%s: received event: %s" % (event['time'], event['type']))
+    elif event['type'] == "STOP_LOSS_FILLED":
+      warn("%s: received event: %s" % (event['time'], event['type']))
+    elif event['type'] == "TAKE_PROFIT_FILLED":
+      warn("%s: received event: %s" % (event['time'], event['type']))
+    elif event['type'] == "TRAILING_STOP_FILLED":
+      warn("%s: received event: %s" % (event['time'], event['type']))
+    elif event['type'] == "MARGIN_CLOSEOUT":
+      warn("%s: received event: %s" % (event['time'], event['type']))
+    elif event['type'] == "ORDER_CANCEL":
+      warn("%s: received event: %s" % (event['time'], event['type']))
+    elif event['type'] == "MARGIN_CALL_ENTER":
+      warn("%s: received event: %s" % (event['time'], event['type']))
+    elif event['type'] == "MARGIN_CALL_EXIT":
+      warn("%s: received event: %s" % (event['time'], event['type']))
     else:
-      warn("%s: Unknown transaction event received: %s" % (transaction['time'],
-                                                           transaction['type']))
+      warn("%s: Unknown transaction event received: %s" % (event['time'], event['type']))
 
 
   @tryRun

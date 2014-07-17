@@ -29,6 +29,7 @@ class Watchdog(Thread):
 
       Parameters:
         currencies  List of currencies managed by this worker.
+        queue       A queue to use for placing new prices.
     '''
 
     Thread.__init__(self)

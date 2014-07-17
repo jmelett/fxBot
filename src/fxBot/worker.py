@@ -122,6 +122,8 @@ class Worker(Thread):
     else:
       warning("%s: Unknown transaction event received: %s" % event)
 
+    warning("event: %s" % event)
+
 
   @tryRun
   def run(self):

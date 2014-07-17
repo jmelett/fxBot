@@ -17,11 +17,13 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
+from tryRun    import tryRun
 from oandapy   import Streamer
 from logging   import error
 from threading import Thread
 
 
+@tryRun
 def _start(self, *args, **kwargs):
   Streamer.start(self, *args, **kwargs)
 

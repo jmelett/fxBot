@@ -18,6 +18,7 @@
 # ***************************************************************************/
 
 from currency  import parsePrice
+from tryRun    import tryRun
 from threading import Thread, Event
 from logging   import info, warn
 from Queue     import Queue
@@ -122,6 +123,7 @@ class Worker(Thread):
       warn("%s: Unknown transaction event received: %s" % (event['time'], event['type']))
 
 
+  @tryRun
   def run(self):
     '''Perform the actual work of processing newly incoming events.'''
 

@@ -28,6 +28,26 @@ def _start(self, *args, **kwargs):
   Streamer.start(self, *args, **kwargs)
 
 
+class StreamError(Exception):
+  def __init__(self, data):
+    """Create a new StreamError object.
+
+      Parameters:
+        data  Some object not clearly specified containing information related to an error that
+              occurred.
+    """
+    self.__data = data
+
+
+  def __str__(self):
+    """Get a textual representation of the error.
+
+      Returns:
+        A textual representation of the error.
+    """
+    return str(self.__data)
+
+
 class ThreadedStreamer(Streamer):
   def __init__(self, queue, *args, **kwargs):
     Streamer.__init__(self, *args, **kwargs)
@@ -57,8 +77,4 @@ class ThreadedStreamer(Streamer):
 
 
   def on_error(self, data):
-    # TODO: find out if a timestamp is delived here
-    error("an error occurred: %s" % data)
-    # TODO: error handling is likely not complete here, we need more knowledge about what happened
-    #       and react accordingly (disconnecting might be too much)
-    self.disconnect()
+    raise StreamError(data)

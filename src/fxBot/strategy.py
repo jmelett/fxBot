@@ -25,8 +25,8 @@ class Strategy:
       Parameters:
         currency  The currency currently of interest.
         time      Time value when the change occurred, represented as datetime object.
-        ask       Latest ask price for the given currency (Decimal).
-        bid       Latest bid price for the given currency (Decimal).
+        ask       Latest ask price for the given currency (Price).
+        bid       Latest bid price for the given currency (Price).
     """
     # derived classes may overwrite this method
     return

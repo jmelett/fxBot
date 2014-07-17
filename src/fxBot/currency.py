@@ -17,6 +17,7 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
+from price           import Price
 from decimal         import Decimal
 from logging         import debug
 from datetime        import datetime, timedelta
@@ -57,7 +58,7 @@ _granularities = {
 }
 
 
-def parsePrice(price):
+def parsePrice(currency, price):
   """Parse a price value.
 
     Parameters:
@@ -65,11 +66,11 @@ def parsePrice(price):
              strings).
 
     Returns:
-      A dict object containing 'time' (datetime) and 'ask' and 'bid' (both Decimal objects).
+      A dict object containing 'time' (datetime) and 'ask' and 'bid' (both Price objects).
   """
   return {'time': parseDate(price['time']),
-          'ask':  Decimal(price['ask']),
-          'bid':  Decimal(price['bid'])}
+          'ask':  Price(Decimal(price['ask']), currency.pip()),
+          'bid':  Price(Decimal(price['bid']), currency.pip())}
 
 
 class Currency:
@@ -88,6 +89,8 @@ class Currency:
     """
     self.__server = server
     self.__currency = currency
+    # TODO: query actual value from server
+    self.__pip = Decimal('0.001')
     # dict indexed by the granularity we are looking for
     # {
     #   granularity:
@@ -108,6 +111,15 @@ class Currency:
     return self.__currency
 
 
+  def pip(self):
+    """Retrieve the quantity of a pip in this currency.
+
+      Returns:
+        A Decimal with value 10^x, x in [...-10...0...+10...] representing a pip in this currency.
+    """
+    return self.__pip
+
+
   def currentPrices(self):
     """Retrieve the current bid and ask prices for this currency.
 
@@ -116,7 +128,7 @@ class Currency:
         ('ask' and 'bid', respectively).
     """
     prices = self.__server.currentPrices(self.__currency)
-    return parsePrice(prices)
+    return parsePrice(self, prices)
 
 
   def history(self, granularity, count):
@@ -175,8 +187,8 @@ class Currency:
     values = []
     for value in history:
       values = [{'time': parseDate(value['time']),
-                 'open': Decimal(value['openMid']),
-                 'close': Decimal(value['closeMid'])}] + values
+                 'open': Price(Decimal(value['openMid']), self.__pip),
+                 'close': Price(Decimal(value['closeMid']), self.__pip)}] + values
 
     # note that we could do much more effort to build the history incrementally by comparing
     # timestamps etc., but in the end this simple case just replacing all the stale data with all

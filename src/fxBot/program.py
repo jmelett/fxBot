@@ -138,6 +138,7 @@ class Program:
 
       Parameters:
         account_id  The ID of the account which to use for interaction with the OANDA servers.
+        currencies  List of currencies managed by the program.
 
       Note:
         Python has a very limited signal handling mechanism in that only the main thread can receive

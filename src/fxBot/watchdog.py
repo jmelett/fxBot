@@ -17,6 +17,7 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
+from tryRun          import tryRun
 from threading       import Thread, Event
 from multiprocessing import Pipe
 from select          import poll, POLLIN
@@ -46,6 +47,7 @@ class Watchdog(Thread):
     self.__timeoutMS = 10000
 
 
+  @tryRun
   def run(self):
     '''Perform the actual work of processing newly incoming events.'''
     # we want to wait for incoming data

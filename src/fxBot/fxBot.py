@@ -104,6 +104,9 @@ def main():
 
   api = API(environment="practice", access_token=arguments[0])
   server = Server(api)
+  # timeout in milliseconds
+  # XXX: fixed for now -- make configurable
+  timeout = 10000
 
   _program = Program(server)
 
@@ -128,7 +131,7 @@ def main():
   if not options.currencies:
     parser.error("no currencies specified, use --currencies=<C1,C2,...,Cn>")
 
-  _program.start(options.account_id, options.currencies)
+  _program.start(options.account_id, options.currencies, timeout)
 
   # We must not exit here until we know that all threads are either torn down or are daemons anyway
   # (in which case they are forcefully shutdown when the program terminates). If we exit, nobody is

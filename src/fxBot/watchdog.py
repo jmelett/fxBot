@@ -24,12 +24,14 @@ from logging         import info, warn
 
 
 class Watchdog(Thread):
-  def __init__(self, currencies, queue):
+  def __init__(self, currencies, queue, timeout):
     '''Create a new watchdog thread.
 
       Parameters:
         currencies  List of currencies managed by this worker.
         queue       A queue to use for placing new prices.
+        timeout     A timeout value (in milliseconds) after which the watchdog will query new prices
+                    for a currency and place them in the queue.
     '''
 
     Thread.__init__(self)
@@ -41,7 +43,7 @@ class Watchdog(Thread):
     self.__pipeSignal = pipeSignal
     self.__poll = poll()
     self.__destroy = Event()
-    self.__timeout = 10000
+    self.__timeout = timeout
 
 
   def run(self):

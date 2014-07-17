@@ -17,7 +17,6 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
-from currency         import parsePrice
 from threadedStreamer import ThreadedStreamer
 
 
@@ -33,6 +32,4 @@ class RateStreamer(ThreadedStreamer):
         data  Data received from the server. Represented as dict object containing 'instrument'
               string describing the currency, a 'time' string, an 'ask' price, and a 'bid' price.
     """
-    price = parsePrice(data)
-    price['instrument'] = data['instrument']
-    self.queue.put(price)
+    self.queue.put(data)

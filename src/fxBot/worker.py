@@ -17,7 +17,7 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
-from decimal   import Decimal
+from currency  import parsePrice
 from threading import Thread, Event
 from logging   import info, warn
 from Queue     import Queue
@@ -46,13 +46,22 @@ class Worker(Thread):
     '''Handle a tick received from the OANDA server.
 
       Parameters:
-        tick  Dictionary containing timestamp string, time (datetime object), ask and bid prices
-              (both Decimal objects).
+        tick  Either dict object containing 'time', 'ask' and 'bid' price as strings or a dict
+              object containing them in an already parsed format: 'time': datetime, 'ask' and 'bid'
+              both Price objects. In the latter case the a 'parsed' key will exist.
     '''
     if tick['instrument'] in self.__currencies:
       pair = self.__currencies[tick['instrument']]
-      pair['strategy'].onChange(pair['currency'], tick['time'],
-                                tick['ask'], tick['bid'])
+      currency = pair['currency']
+      strategy = pair['strategy']
+
+      # note that depending on where we got the 'tick' from (from the watchdog in form of a
+      # heartbeat or through a regular price change event) the 'tick' object might be already
+      # parsed, if that is not the case we need to do it here
+      if not 'parsed' in tick:
+        tick = parsePrice(currency, tick)
+
+      strategy.onChange(currency, tick['time'], tick['ask'], tick['bid'])
     else:
       warn("Received tick for unhandled currency: %s: %s ask=%s, bid=%s"
            % (tick['time'], tick['instrument'], tick['ask'], tick['bid']))

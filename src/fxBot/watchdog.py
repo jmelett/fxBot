@@ -60,10 +60,9 @@ class Watchdog(Thread):
         #       only send it if so
         currency = pair['currency']
         prices = currency.currentPrices()
-        self.__queue.put({'instrument': currency.name(),
-                          'time': prices['time'],
-                          'ask': prices['ask'],
-                          'bid': prices['bid']})
+        prices['instrument'] = currency.name()
+        prices['parsed'] = True
+        self.__queue.put(prices)
 
 
   def destroy(self):

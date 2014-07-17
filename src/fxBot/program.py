@@ -130,7 +130,7 @@ class Program:
                                          str(trade['trailingStop']).ljust(widths[7])))
 
 
-  def start(self, account_id, currencies):
+  def start(self, account_id, currencies, timeout):
     """Start the program.
 
       An invocation of this method causes the object to create the necessary infrastructure to
@@ -139,6 +139,8 @@ class Program:
       Parameters:
         account_id  The ID of the account which to use for interaction with the OANDA servers.
         currencies  List of currencies managed by the program.
+        timeout     A timeout value (in milliseconds) after which the watchdog will query new prices
+                    for a currency and place them in the queue.
 
       Note:
         Python has a very limited signal handling mechanism in that only the main thread can receive
@@ -154,7 +156,7 @@ class Program:
                         'strategy': EmaStrategy()} for c in currencySet}
 
     self.__worker = Worker(currencyDict)
-    self.__watchdog = Watchdog(currencyDict, self.__worker.queue())
+    self.__watchdog = Watchdog(currencyDict, self.__worker.queue(), timeout)
     self.__rateStreamer = RateStreamer(self.__server.token(), self.__worker.queue())
     self.__eventStreamer = EventStreamer(self.__server.token(), self.__worker.queue())
 

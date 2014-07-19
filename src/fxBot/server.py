@@ -44,6 +44,7 @@ class Server:
       Returns:
         A list of dict objects representing the user's accounts. It contains the following keys:
         'accountId', 'accountName', 'accountCurrency', and 'marginRate'.
+
       Examples:
         A possible return value might look like this:
         [{

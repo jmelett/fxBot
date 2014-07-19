@@ -23,6 +23,7 @@ from logging   import error
 from threading import Thread
 
 
+# TODO: think about making this function a classmethod of ThreadedStreamer
 @tryRun
 def _start(self, *args, **kwargs):
   Streamer.start(self, *args, **kwargs)

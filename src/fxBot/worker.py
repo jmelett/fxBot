@@ -120,7 +120,7 @@ class Worker(Thread):
     elif event['type'] == "MARGIN_CALL_EXIT":
       warn("%s: received event: %s" % (event['time'], event['type']))
     else:
-      warn("%s: Unknown transaction event received: %s" % (event['time'], event['type']))
+      warn("%s: Unknown transaction event received: %s" % event)
 
 
   @tryRun

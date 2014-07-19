@@ -126,7 +126,6 @@ class Worker(Thread):
   @tryRun
   def run(self):
     '''Perform the actual work of processing newly incoming events.'''
-
     while True:
       data = self.__queue.get()
 

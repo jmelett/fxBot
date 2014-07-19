@@ -45,7 +45,7 @@ class Watchdog(Thread):
     self.__poll = poll()
     self.__registered = False
     self.__destroy = Event()
-    self.__timeoutMS = timeout
+    self.__timeout = timeout
 
 
   @tryRun
@@ -56,7 +56,7 @@ class Watchdog(Thread):
     self.__registered = True
 
     while True:
-      self.__poll.poll(self.__timeoutMS)
+      self.__poll.poll(self.__timeout)
 
       if self.__destroy.is_set():
         break

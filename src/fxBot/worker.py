@@ -110,7 +110,12 @@ class Worker(Thread):
     elif event['type'] == "TAKE_PROFIT_FILLED":
       warning("%s: received event: %s" % (event['time'], event['type']))
     elif event['type'] == "TRAILING_STOP_FILLED":
-      warning("%s: received event: %s" % (event['time'], event['type']))
+      # if we initially bought and we close the order we now sold
+      verb = 'sold' if event['side'] == 'buy' else 'bought'
+      warning("%s: %s: %s (trade id: %s): %s %s units @ %s, P/L: %s (interest: %s) new balance: %s"
+              % (event['type'], event['time'], event['instrument'], event['tradeId'], verb,
+                 event['units'], event['price'], event['pl'], event['interest'],
+                 event['accountBalance']))
     elif event['type'] == "MARGIN_CLOSEOUT":
       warning("%s: received event: %s" % (event['time'], event['type']))
     elif event['type'] == "ORDER_CANCEL":

@@ -45,7 +45,7 @@ class Watchdog(Thread):
     self.__poll = poll()
     self.__registered = False
     self.__destroy = Event()
-    self.__timeoutMS = 10000
+    self.__timeoutMS = timeout
 
 
   @tryRun

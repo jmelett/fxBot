@@ -88,6 +88,7 @@ class MockStreamer(Thread):
   def start(self, *args, **kwargs):
     Thread.start(self)
 
+
   def disconnect(self):
     self._destroy.set()
 

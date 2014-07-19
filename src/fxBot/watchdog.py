@@ -43,6 +43,7 @@ class Watchdog(Thread):
     self.__pipePoll = pipePoll
     self.__pipeSignal = pipeSignal
     self.__poll = poll()
+    self.__registered = False
     self.__destroy = Event()
     self.__timeout = timeout
 
@@ -52,6 +53,7 @@ class Watchdog(Thread):
     '''Perform the actual work of processing newly incoming events.'''
     # we want to wait for incoming data
     self.__poll.register(self.__pipePoll, POLLIN)
+    self.__registered = True
 
     while True:
       self.__poll.poll(self.__timeout)
@@ -73,6 +75,9 @@ class Watchdog(Thread):
     '''Destroy the watchdog thread.'''
     self.__destroy.set()
     self.__pipeSignal.send([])
-    self.__poll.unregister(self.__pipePoll)
+
+    if self.__registered:
+      self.__poll.unregister(self.__pipePoll)
+
     self.__pipePoll.close()
     self.__pipeSignal.close()

@@ -21,7 +21,7 @@ from currency  import parsePrice
 from tryRun    import tryRun
 from threading import Thread, Event
 from logging   import info, warn
-from Queue     import Queue
+from queue     import Queue
 
 
 class Worker(Thread):
@@ -36,7 +36,7 @@ class Worker(Thread):
     # Please note that we have full control over the termination of the worker thread, i.e., we can
     # wake it up at any time by putting a dummy item in the queue, so there is no need to make this
     # thread a daemon thread like the stream threads.
-    Thread.__init__(self)
+    super().__init__()
 
     self.__currencies = currencies
     self.__queue = Queue()

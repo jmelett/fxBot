@@ -35,7 +35,7 @@ class Watchdog(Thread):
                     for a currency and place them in the queue.
     '''
 
-    Thread.__init__(self)
+    super().__init__()
     pipePoll, pipeSignal = Pipe()
 
     self.__queue = queue

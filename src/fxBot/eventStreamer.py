@@ -22,7 +22,7 @@ from threadedStreamer import ThreadedStreamer
 
 class EventStreamer(ThreadedStreamer):
   def __init__(self, token, queue, *args, **kwargs):
-    ThreadedStreamer.__init__(self, queue, access_token=token, *args, **kwargs)
+    super().__init__(queue, access_token=token, *args, **kwargs)
 
     # overwrite the URL to use -- the Streamer class can only query rate streams, no event streams
     # TODO: find out which URL to use in case of a live account

@@ -149,6 +149,18 @@ class Price:
 
 
   def __rdiv__(self, value):
+    """Divide a value by a Price object.
+
+      Parameters:
+        value  Some value to divide by a Price object.
+
+      Returns:
+        New Price object created by dividing the given value by the Price object.
+    """
+    return Price(value / self.__value, self.__pip)
+
+
+  def __truediv__(self, value):
     """Divide the Price object by a value.
 
       Parameters:
@@ -157,4 +169,16 @@ class Price:
       Returns:
         New Price object created by dividing the Price object by the given value.
     """
-    return Price(value / self.__value, self.__pip)
+    return self.__div__(value)
+
+
+  def __rtruediv__(self, value):
+    """Divide a value by a Price object.
+
+      Parameters:
+        value  Some value to divide by a Price object.
+
+      Returns:
+        New Price object created by dividing the given value by the Price object.
+    """
+    return self.__rdiv__(value)

@@ -80,7 +80,7 @@ class MockServer:
 
 class MockStreamer(Thread):
   def __init__(self, token, queue):
-    Thread.__init__(self)
+    super().__init__()
     self._destroy = Event()
     self._queue = queue
 

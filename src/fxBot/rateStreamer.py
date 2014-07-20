@@ -22,7 +22,7 @@ from threadedStreamer import ThreadedStreamer
 
 class RateStreamer(ThreadedStreamer):
   def __init__(self, token, queue, *args, **kwargs):
-    ThreadedStreamer.__init__(self, queue, access_token=token, *args, **kwargs)
+    super().__init__(queue, access_token=token, *args, **kwargs)
 
 
   def on_success(self, data):

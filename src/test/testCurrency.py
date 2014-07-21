@@ -68,8 +68,8 @@ class MockServer:
 class TestCurrency(TestCase):
   def setUp(self):
     self.__server = MockServer()
-    self.__currencyName = 'XAU_USD'
-    self.__currency = Currency(self.__server, self.__currencyName)
+    self.__currency_name = 'XAU_USD'
+    self.__currency = Currency(self.__server, self.__currency_name)
 
 
   def testHistory(self):
@@ -87,14 +87,14 @@ class TestCurrency(TestCase):
   def testHistoryCachingCount(self):
     """Verify that historical data is cached and if more data is requested a new request is made."""
     # fix the date returned to make the test work even in the worst scheduling scenarios
-    with patch('currency.datetime') as mockNow:
-      mockNow.now.return_value = datetime.now()
+    with patch('currency.datetime') as mock_now:
+      mock_now.now.return_value = datetime.now()
 
       history = self.__currency.history('5s', 2)
       self.assertEqual(len(history), 2)
 
       self.__server.disable()
-      self.assertEqual(self.__server.history(self.__currencyName, 'S5', 2), [])
+      self.assertEqual(self.__server.history(self.__currency_name, 'S5', 2), [])
 
       # should still succeed since we get the cached value
       history = self.__currency.history('5s', 2)
@@ -110,40 +110,40 @@ class TestCurrency(TestCase):
     """Verify that historical data is cached but if time advances a new request is made."""
     now = datetime.now()
 
-    with patch('currency.datetime') as mockNow:
-      mockNow.now.return_value = now
+    with patch('currency.datetime') as mock_now:
+      mock_now.now.return_value = now
 
       history = self.__currency.history('5s', 2)
       self.assertEqual(len(history), 2)
 
     self.__server.disable()
-    self.assertEqual(self.__server.history(self.__currencyName, 'S5', 2), [])
+    self.assertEqual(self.__server.history(self.__currency_name, 'S5', 2), [])
 
-    with patch('currency.datetime') as mockNow:
+    with patch('currency.datetime') as mock_now:
       # advance wallclock time by 2s -- we are within the granularity so the cache is still
       # considered up-to-date
-      mockNow.now.return_value = now + timedelta(seconds=2)
+      mock_now.now.return_value = now + timedelta(seconds=2)
 
       history = self.__currency.history('5s', 2)
       self.assertEqual(len(history), 2)
 
-    with patch('currency.datetime') as mockNow:
+    with patch('currency.datetime') as mock_now:
       # advance wallclock time by 5 seconds -- we are outside of our granularity so the currency
       # should know that it needs to fetch new data from the server
-      mockNow.now.return_value = now + timedelta(seconds=5)
+      mock_now.now.return_value = now + timedelta(seconds=5)
 
       history = self.__currency.history('5s', 2)
       self.assertEqual(history, [])
 
     # reenable the server again
     self.__server.enable()
-    history = self.__server.history(self.__currencyName, 'S5', 2)
+    history = self.__server.history(self.__currency_name, 'S5', 2)
     self.assertEqual(len(history), 2)
 
-    with patch('currency.datetime') as mockNow:
+    with patch('currency.datetime') as mock_now:
       # now we are within the granularity again but the cached history no longer contains enough
       # elements (because the last request returned an empty list)
-      mockNow.now.return_value = now + timedelta(seconds=2)
+      mock_now.now.return_value = now + timedelta(seconds=2)
 
       history = self.__currency.history('5s', 2)
       self.assertEqual(len(history), 2)
@@ -151,8 +151,8 @@ class TestCurrency(TestCase):
 
   def testHistoryCachingGranularity(self):
     """Verify that historical data is cached but on a granularity basis."""
-    with patch('currency.datetime') as mockNow:
-      mockNow.now.return_value = datetime.now()
+    with patch('currency.datetime') as mock_now:
+      mock_now.now.return_value = datetime.now()
 
       history = self.__currency.history('5s', 2)
       self.assertEqual(len(history), 2)

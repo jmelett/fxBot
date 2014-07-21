@@ -20,7 +20,7 @@
 from currency  import parsePrice
 from tryRun    import tryRun
 from threading import Thread, Event
-from logging   import info, warn
+from logging   import info, warning
 from queue     import Queue
 
 
@@ -64,8 +64,8 @@ class Worker(Thread):
 
       strategy.onChange(currency, tick['time'], tick['ask'], tick['bid'])
     else:
-      warn("Received tick for unhandled currency: %s: %s ask=%s, bid=%s"
-           % (tick['time'], tick['instrument'], tick['ask'], tick['bid']))
+      warning("Received tick for unhandled currency: %s: %s ask=%s, bid=%s"
+              % (tick['time'], tick['instrument'], tick['ask'], tick['bid']))
 
 
   def handleEvent(self, event):
@@ -104,23 +104,23 @@ class Worker(Thread):
     #                          closed or reduced. Trade related fields are: id, units, pl,
     #                          interest.
     if event['type'] == "ORDER_FILLED":
-      warn("%s: received event: %s" % (event['time'], event['type']))
+      warning("%s: received event: %s" % (event['time'], event['type']))
     elif event['type'] == "STOP_LOSS_FILLED":
-      warn("%s: received event: %s" % (event['time'], event['type']))
+      warning("%s: received event: %s" % (event['time'], event['type']))
     elif event['type'] == "TAKE_PROFIT_FILLED":
-      warn("%s: received event: %s" % (event['time'], event['type']))
+      warning("%s: received event: %s" % (event['time'], event['type']))
     elif event['type'] == "TRAILING_STOP_FILLED":
-      warn("%s: received event: %s" % (event['time'], event['type']))
+      warning("%s: received event: %s" % (event['time'], event['type']))
     elif event['type'] == "MARGIN_CLOSEOUT":
-      warn("%s: received event: %s" % (event['time'], event['type']))
+      warning("%s: received event: %s" % (event['time'], event['type']))
     elif event['type'] == "ORDER_CANCEL":
-      warn("%s: received event: %s" % (event['time'], event['type']))
+      warning("%s: received event: %s" % (event['time'], event['type']))
     elif event['type'] == "MARGIN_CALL_ENTER":
-      warn("%s: received event: %s" % (event['time'], event['type']))
+      warning("%s: received event: %s" % (event['time'], event['type']))
     elif event['type'] == "MARGIN_CALL_EXIT":
-      warn("%s: received event: %s" % (event['time'], event['type']))
+      warning("%s: received event: %s" % (event['time'], event['type']))
     else:
-      warn("%s: Unknown transaction event received: %s" % event)
+      warning("%s: Unknown transaction event received: %s" % event)
 
 
   @tryRun

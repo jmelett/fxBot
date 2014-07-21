@@ -21,7 +21,6 @@ from tryRun          import tryRun
 from threading       import Thread, Event
 from multiprocessing import Pipe
 from select          import poll, POLLIN
-from logging         import info, warn
 
 
 class Watchdog(Thread):

@@ -142,7 +142,7 @@ class Program:
         timeout     A timeout value (in milliseconds) after which the watchdog will query new prices
                     for a currency and place them in the queue.
 
-      Note:
+      Notes:
         Python has a very limited signal handling mechanism in that only the main thread can receive
         signals. In addition, it will receive/dispatch them only if it is actually running and not
         blocked in a system call. Since we use blocking primitives basically everywhere (the

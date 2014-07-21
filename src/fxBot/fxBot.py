@@ -19,14 +19,15 @@
 
 """A trading bot for the Forex market using OANDA's REST API."""
 
-from signal    import signal, pause, SIGINT, SIGTERM
-from logging   import basicConfig, addLevelName, WARNING
-from optparse  import OptionParser
-from oandapy   import API
-from program   import Program
-from server    import Server
-from proxy     import createProxyInstance
-from timeProxy import TimeProxy
+from signal     import signal, pause, SIGINT, SIGTERM
+from logging    import basicConfig, addLevelName, WARNING
+from optparse   import OptionParser
+from oandapy    import API
+from program    import Program
+from server     import Server
+from proxy      import createProxyInstance
+from cacheProxy import CacheProxy
+from timeProxy  import TimeProxy
 
 
 _program = None
@@ -106,7 +107,7 @@ def main():
 
   api = API(environment="practice", access_token=arguments[0])
   server = Server(api)
-  proxy = createProxyInstance(server, TimeProxy)
+  proxy = createProxyInstance(server, CacheProxy, TimeProxy)
   # timeout in milliseconds
   # XXX: fixed for now -- make configurable
   timeout = 10000

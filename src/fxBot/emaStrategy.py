@@ -17,7 +17,7 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
-from logging    import warn
+from logging    import warning
 from statistics import calculateAvg, calculateEMA
 from strategy   import Strategy
 
@@ -42,7 +42,7 @@ class EmaStrategy(Strategy):
     #calculateEMA(history, 10, 'avg', 'ema10')
     #calculateEMA(history, 20, 'avg', 'ema20')
 
-    warn("onChange: %s ask=%s bid=%s" % (currency.name(), ask, bid))
+    warning("onChange: %s ask=%s bid=%s" % (currency.name(), ask, bid))
 
     #widths = self.__queryWidths(history, {'title': timeString,  'key': 'time'},
     #                                     {'title': ema20String, 'key': 'ema20'})

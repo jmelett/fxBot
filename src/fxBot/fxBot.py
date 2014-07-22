@@ -28,6 +28,7 @@ from server     import Server
 from proxy      import createProxyInstance
 from cacheProxy import CacheProxy
 from timeProxy  import TimeProxy
+from limitProxy import LimitProxy
 
 
 _program = None
@@ -107,7 +108,7 @@ def main():
 
   api = API(environment="practice", access_token=arguments[0])
   server = Server(api)
-  proxy = createProxyInstance(server, CacheProxy, TimeProxy)
+  proxy = createProxyInstance(server, CacheProxy, TimeProxy, LimitProxy)
   # timeout in milliseconds
   # XXX: fixed for now -- make configurable
   timeout = 10000

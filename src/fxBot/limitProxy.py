@@ -17,8 +17,9 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
-from time    import sleep, time
-from logging import debug
+from time      import sleep, time
+from threading import Lock
+from logging   import debug
 
 
 # According to OANDA documents we are allowed to have 4 conncetions to the server per second (with
@@ -39,10 +40,11 @@ class LimitProxy:
       TODO: This class has the problem that it is not safe against extensions of the Server class:
             everytime a new method is added it has to be declared here too. We need to find a better
             way to work around that.
-      TODO: We require synchronization here in case multiple threads access such an object
-            concurrently.
     """
     super().__init__(server)
+
+    # lock to protect the last request related data
+    self.__lock = Lock()
     # a list of datetimes when the last requests occurred
     self.__last_requests = [0.0] * _REQUEST_COUNT
     # index to the datetime of the request that was performed last
@@ -51,19 +53,20 @@ class LimitProxy:
 
   def limit(function):
     def postpone(self, *args, **kwargs):
-      self.__last_request = (self.__last_request + 1) % len(self.__last_requests)
-      last = self.__last_requests[self.__last_request]
-      # time.clock() would likely be the preferred function (presumably less overhead) but it won't
-      # work as intended in conjunction with a blocking call such as sleep
-      delta = time() - last
-
-      # we want to wait until the most distant request happened at least one second ago
-      while delta < 1.0:
-        debug("limitProxy: too many request, postponing")
-        sleep(1.0 - delta)
+      with self.__lock:
+        self.__last_request = (self.__last_request + 1) % len(self.__last_requests)
+        last = self.__last_requests[self.__last_request]
+        # time.clock() would likely be the preferred function (presumably less overhead) but it won't
+        # work as intended in conjunction with a blocking call such as sleep
         delta = time() - last
 
-      self.__last_requests[self.__last_request] = time()
+        # we want to wait until the most distant request happened at least one second ago
+        while delta < 1.0:
+          debug("limitProxy: too many request, postponing")
+          sleep(1.0 - delta)
+          delta = time() - last
+
+        self.__last_requests[self.__last_request] = time()
 
       # default to None, if this case hits we get an exception which is as intended
       super_function = getattr(super(), function.__name__, None)

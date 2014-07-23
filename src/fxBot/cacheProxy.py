@@ -19,6 +19,7 @@
 
 from datetimeRfc3339 import parseDate
 from datetime        import datetime, timedelta
+from threading       import Lock
 from logging         import debug
 
 
@@ -66,6 +67,8 @@ class CacheProxy:
         server  A Server object.
     """
     super().__init__(server)
+    # lock to protect our cached data
+    self.__lock = Lock()
     # dict indexed by the granularity we are looking for
     # {
     #   currency: {
@@ -108,31 +111,36 @@ class CacheProxy:
             might provide a reliable source even over the weekend or when markets are closed.
     """
     # check if there is any data for the given granularity
-    if currency in self.__historyData:
-      currencyData = self.__historyData[currency]
+    with self.__lock:
+      if currency in self.__historyData:
+        currencyData = self.__historyData[currency]
 
-      if granularity in currencyData:
-        data = currencyData[granularity]
-        delta = _deltas[granularity]
+        if granularity in currencyData:
+          data = currencyData[granularity]
+          delta = _deltas[granularity]
 
-        # check if we got data from a last query that should still be current
-        if datetime.now() - data['lastUpdate'] < delta:
-          # check if that data contains enough timestamps
-          if len(data['data']) >= count:
-            debug("currency: cache-hit (currency=%s, granularity=%s, count=%s)"
-                    % (currency, granularity, count))
-            return data['data'][0:count]
-    else:
-      self.__historyData[currency] = {}
+          # check if we got data from a last query that should still be current
+          if datetime.now() - data['lastUpdate'] < delta:
+            # check if that data contains enough timestamps
+            if len(data['data']) >= count:
+              debug("currency: cache-hit (currency=%s, granularity=%s, count=%s)"
+                      % (currency, granularity, count))
+              return data['data'][0:count]
+      else:
+        self.__historyData[currency] = {}
 
     # there is no or to few history data in our cache, get the history from the server
     history = super().history(currency, granularity, count)
     cache_line = {'lastUpdate': datetime.now(), 'data': history}
 
-    # note that we could do much more effort to build the history incrementally by comparing
-    # timestamps etc., but in the end this simple case just replacing all the stale data with all
-    # the new data probably covers all relevant cases we are interested in
-    self.__historyData[currency][granularity] = cache_line
+    # We released the lock in between so we might actually overwrite data written when the lock was
+    # released. We do not care because any entry that we put in is valid -- we have no preference.
+    with self.__lock:
+      # note that we could do much more effort to build the history incrementally by comparing
+      # timestamps etc., but in the end this simple case just replacing all the stale data with all
+      # the new data probably covers all relevant cases we are interested in
+      self.__historyData[currency][granularity] = cache_line
+
     debug("cacheProxy: cache-miss (currency=%s, granularity=%s, count=%s)"
             % (currency, granularity, count))
     return history

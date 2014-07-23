@@ -19,6 +19,7 @@
 
 from datetimeRfc3339 import parseDate
 from datetime        import datetime, timedelta
+from threading       import Lock
 
 
 class TimeProxy:
@@ -38,6 +39,8 @@ class TimeProxy:
     # the maximum number of time deltas we use
     self.__MAX_DELTA_COUNT = 5
 
+    # lock to protect all time data
+    self.__lock = Lock()
     self.__average_delta = None
     self.__time_deltas = []
     self.__delta_index = 0
@@ -64,6 +67,11 @@ class TimeProxy:
 
 
   def __updateAverageDelta(self):
+    """Update the average delta between server time and local time.
+
+      Notes:
+        The object lock must be held during this call.
+    """
     delta_sum = timedelta()
 
     for delta in self.__time_deltas:
@@ -83,15 +91,16 @@ class TimeProxy:
         We assume that the time sample is from a recent request. More exactly, we relate the time to
         the system's *current* local time in order to calculate the delta.
     """
-    delta = datetime.now() - time
+    with self.__lock:
+      delta = datetime.now() - time
 
-    if len(self.__time_deltas) < self.__MAX_DELTA_COUNT:
-      self.__time_deltas.append(delta)
-    else:
-      self.__time_deltas[self.__delta_index] = delta
-      self.__delta_index = (self.__delta_index + 1) % self.__MAX_DELTA_COUNT
+      if len(self.__time_deltas) < self.__MAX_DELTA_COUNT:
+        self.__time_deltas.append(delta)
+      else:
+        self.__time_deltas[self.__delta_index] = delta
+        self.__delta_index = (self.__delta_index + 1) % self.__MAX_DELTA_COUNT
 
-    self.__updateAverageDelta()
+      self.__updateAverageDelta()
 
 
   def estimatedTime(self):
@@ -101,7 +110,8 @@ class TimeProxy:
         An estimation of the servers current time (datetime). None in case no estimation can be made
         due to a lack of intercepted responses containing the server's time.
     """
-    if self.__average_delta is None:
-      return None
+    with self.__lock:
+      if self.__average_delta is None:
+        return None
 
-    return datetime.now() - self.__average_delta
+      return datetime.now() - self.__average_delta

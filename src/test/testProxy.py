@@ -17,7 +17,9 @@
 # *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
 # ***************************************************************************/
 
-from proxy    import createProxyInstance
+from server   import Server
+from proxy    import createProxyInstance, _Proxy
+from types    import FunctionType
 from unittest import TestCase, main
 
 
@@ -62,6 +64,19 @@ class TestCacheProxy(TestCase):
     """Verify that although no proxy implements this method it is still forwarded to the server."""
     result = self.__proxy.history('XAU_USD', 'S5', 10)
     self.assertEqual(result, 'XAU_USDS510')
+
+
+  def testWrapsAllServerMethods(self):
+    """Test that the proxy implements all required methods."""
+    def queryMethods(klass):
+      l = [k for k,v in klass.__dict__.items() if type(v) == FunctionType]
+      l.sort()
+      return l
+
+    expect = queryMethods(Server)
+    found = queryMethods(_Proxy)
+
+    self.assertEqual(expect, found)
 
 
 if __name__ == '__main__':

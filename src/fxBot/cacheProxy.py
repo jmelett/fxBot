@@ -123,7 +123,7 @@ class CacheProxy:
           if datetime.now() - data['lastUpdate'] < delta:
             # check if that data contains enough timestamps
             if len(data['data']) >= count:
-              debug("currency: cache-hit (currency=%s, granularity=%s, count=%s)"
+              debug("cacheProxy: cache-hit (currency=%s, granularity=%s, count=%s)"
                       % (currency, granularity, count))
               return data['data'][0:count]
       else:

@@ -140,6 +140,12 @@ class Worker(Thread):
       elif 'heartbeat' in data:
         heartbeat = data['heartbeat']
         info("%s: heartbeat" % heartbeat['time'])
+      # Here is the thing: apparently OANDA switches randomly between sending the current prices in
+      # a 'tick' key or without this key. At first I thought I was just being crazy thinking I saw
+      # that they used the 'tick' key to indicate a tick but do so no longer but then they suddenly
+      # switched back. We can handle both cases here and treat them uniformly afterwards.
+      elif 'tick' in data:
+        self.handleTick(data['tick'])
       else:
         self.handleTick(data)
 

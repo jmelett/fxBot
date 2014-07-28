@@ -43,6 +43,18 @@ class MockServer:
       }
 
 
+  def history(self, currency, granularity, count):
+    return [{
+        'time': '2014-07-02T00:00:00.000000Z',
+        'openMid': 1.36803,
+        'highMid': 1.368125,
+        'lowMid': 1.364275,
+        'closeMid': 1.365315,
+        'volume': 28242,
+        'complete': True,
+      }]
+
+
   def accounts(self):
     """Dummy implementation for the accounts() method of a real server."""
     return [{

@@ -129,7 +129,7 @@ class Server:
           'lowMid': 1.364275,
           'closeMid': 1.365315,
           'volume': 28242,
-          'complete': true,
+          'complete': True,
         }]
     """
     return self.__api.get_history(instrument=currency,

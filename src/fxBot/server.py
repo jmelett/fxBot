@@ -132,8 +132,12 @@ class Server:
           'complete': True,
         }]
     """
+    # note that we explicitly set the hour of the day to which align the data (0:00 UTC) as well as
+    # the day of the week to align it to for larger granularities (Monday)
     return self.__api.get_history(instrument=currency,
                                   granularity=granularity,
+                                  dailyAlignment='0',
+                                  weeklyAlignment='Monday',
                                   #start=...,
                                   #end=datetime.now().isoformat('T') + 'Z',
                                   #includeFirst='false',

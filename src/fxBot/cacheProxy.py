@@ -23,37 +23,44 @@ from threading       import Lock
 from logging         import debug, warning
 
 
+_alignment_minute = {'microsecond': 0,'second': 0}
+_alignment_hour   = {'microsecond': 0,'second': 0,'minute': 0}
+_alignment_day    = {'microsecond': 0,'second': 0,'minute': 0,'hour': 0}
+
 """Dictionary for mapping granularities to timedeltas describing their length."""
 _deltas = {
   # Top of the minute alignment.
-  'S5':  timedelta(seconds=5),
-  'S10': timedelta(seconds=10),
-  'S15': timedelta(seconds=15),
-  'S30': timedelta(seconds=30),
-  'M1':  timedelta(minutes=1),
+  'S5':  {'delta': timedelta(seconds=5),  'alignment': _alignment_minute},
+  'S10': {'delta': timedelta(seconds=10), 'alignment': _alignment_minute},
+  'S15': {'delta': timedelta(seconds=15), 'alignment': _alignment_minute},
+  'S30': {'delta': timedelta(seconds=30), 'alignment': _alignment_minute},
+  'M1':  {'delta': timedelta(minutes=1),  'alignment': _alignment_minute},
   # Top of the hour alignment.
-  'M2':  timedelta(minutes=2),
-  'M3':  timedelta(minutes=3),
-  'M5':  timedelta(minutes=5),
-  'M10': timedelta(minutes=10),
-  'M15': timedelta(minutes=15),
-  'M30': timedelta(minutes=30),
-  'H1':  timedelta(hours=1),
-  # Start of day alignment (17:00, Timezone/New York).
-  'H2':  timedelta(hours=2),
-  'H3':  timedelta(hours=3),
-  'H4':  timedelta(hours=4),
-  'H6':  timedelta(hours=6),
-  'H8':  timedelta(hours=8),
-  'H12': timedelta(hours=12),
-  'D':   timedelta(hours=24),
-  # Start of week alignment (Saturday).
+  'M2':  {'delta': timedelta(minutes=2),  'alignment': _alignment_hour},
+  'M3':  {'delta': timedelta(minutes=3),  'alignment': _alignment_hour},
+  'M5':  {'delta': timedelta(minutes=5),  'alignment': _alignment_hour},
+  'M10': {'delta': timedelta(minutes=10), 'alignment': _alignment_hour},
+  'M15': {'delta': timedelta(minutes=15), 'alignment': _alignment_hour},
+  'M30': {'delta': timedelta(minutes=30), 'alignment': _alignment_hour},
+  'H1':  {'delta': timedelta(hours=1),    'alignment': _alignment_hour},
+  # Default alignment: Start of day alignment (17:00, Timezone/New York).
+  # We change that to UTC by passing dailyAlignment='0' to the server.
+  'H2':  {'delta': timedelta(hours=2),    'alignment': _alignment_day},
+  'H3':  {'delta': timedelta(hours=3),    'alignment': _alignment_day},
+  'H4':  {'delta': timedelta(hours=4),    'alignment': _alignment_day},
+  'H6':  {'delta': timedelta(hours=6),    'alignment': _alignment_day},
+  'H8':  {'delta': timedelta(hours=8),    'alignment': _alignment_day},
+  'H12': {'delta': timedelta(hours=12),   'alignment': _alignment_day},
+  'D':   {'delta': timedelta(hours=24),   'alignment': _alignment_day},
+  # TODO: these next value are unsupported as of now
+  # Default alignment: Start of week alignment (Saturday).
+  # We change that to Monday by passing weeklyAlignment='Monday' to the server.
   # TODO: check if one week really is exactly one week in their sense and that we do not have to
   #       have additional logic for realignment etc.
-  'W':   timedelta(weeks=1),
+  #'W':   {'delta': timedelta(weeks=1), 'alignment': timedelta(...)}
   # Start of month alignment (First day of the month).
   # TODO: check if four weeks really are a month in their sense
-  'M':   timedelta(weeks=4),
+  #'M':   {'delta': timedelta(weeks=4), 'alignment': timedelta(...)}
 }
 
 
@@ -80,6 +87,72 @@ class CacheProxy:
     #   }
     # }
     self.__history_data = {}
+    # if this proxy is used in conjunction with a TimeProxy we can retrieve an estimation of the
+    # servers time using the 'estimatedTime' method -- here we try to query a reference to it
+    self.__time_source = getattr(self, "estimatedTime", None)
+
+    if not self.__time_source:
+      warning("cacheProxy: no server time estimation possible")
+
+
+  def __cacheLineStillValid(self, data, delta_data):
+    """Check if a cache line is still valid.
+
+      Parameters:
+        data        The cache line data, i.e., a '__history_data' entry already indexed by currency
+                    and granularity.
+        delta_data  An entry of the '_deltas' dict.
+
+      Returns:
+        True in case the given cache line data is estimated to be still the most up to date data
+        available, false if new data should be queried from the server.
+    """
+    now = datetime.now()
+    last_update = data['lastUpdate']
+
+    # We have two approaches for checking whether a cached entry is still valid (i.e., holds the
+    # most recent data):
+    # 1) By simply comparing the timestamp of the last update with the current time. If the
+    #    difference is greater than the granularity of the data, the server must have new data and
+    #    we should query it. This approach works but it suffers from the problem that we might
+    #    not always detect that the server has new data.
+    #    Consider the following example:
+    #      The last request was at 11:13 local time, which corresponds to 13:47 server time. At the
+    #      current request, the local time is 11:30. Assuming a granularity of 1h we do no update
+    #      because the next update is due only 12:13. However, the server's current time is 13:04,
+    #      meaning it changed the hour. Now, because the server's data is hour aligned, if we send a
+    #      new request to the server we should get a new data point in the history. So we should not
+    #      return the cached data.
+    # 2) In order to cope with this last problem, we use an estimation of the server's time to
+    #    assess whether or not the *server* increased time above a granularity boundary.
+    if self.__time_source and self.__time_source() is not None:
+      # First we need to get a hold on the server's time, now and when the last request is
+      # made. We can retrieve it by rearranging the following equation:
+      # LT_now - LT_last = ST_now - ST_last
+      # --> ST_last = ST_now - (LT_now - LT_last)
+      local_time_now = now
+      local_time_last = last_update
+      server_time_now = self.__time_source()
+      server_time_last = server_time_now - (local_time_now - local_time_last)
+
+      # Now that we have the time we need to relate it to the same reference as the server
+      # does. The server aligns the data based on the given granularity:
+      # if 0s < granularity && granularity <= 1m -> one minute
+      # if 1m < granularity && granularity <= 1h -> one hour
+      # if 1h < granularity && granularity <= 1d -> one day (day starts at 0:00 UTC)
+      # greater granularities are currently not supported
+      server_time_last_aligned = server_time_last.replace(**delta_data['alignment'])
+
+      # Next we can relate the actual times to the aligned ones.
+      d = delta_data['delta']
+      d1 = server_time_last - server_time_last_aligned
+      d2 = server_time_now - server_time_last_aligned
+
+      # And if another 'granularity' fits in between the last time stamp and the new one, the server
+      # should have a new item. If both are equal we still have a current entry in our cache.
+      return int(d1 / d) == int(d2 / d)
+    else:
+      return now - last_update < delta_data['delta']
 
 
   def history(self, currency, granularity, count):
@@ -97,30 +170,19 @@ class CacheProxy:
       Returns:
         A list of dicts representing the various data points. Each dict has the following keys:
         'time', 'openMid', 'highMid', 'lowMid', 'closeMid', 'volume', and 'complete'.
-
-      TODO: The caching approach still suffers from one problem: there is a potentially large gap
-            between our system's current time and the server time. The data we receive is aligned
-            based on the server's time. Now because of the time difference it is possible that we
-            return data from our cache although there is already more recent data available on the
-            server.
-            To solve this issue we need to relate the server's time to our's. But there we have the
-            problem that we do not reliably know the server's time (since that data is already
-            aligned and we do not necessarily receive data for the "current" non-aligned time). One
-            possible solution is to inspect all data from the server and update our view of the
-            server's current time from that timestamp. Especially the eventStreamer's heartbeat
-            might provide a reliable source even over the weekend or when markets are closed.
     """
-    # check if there is any data for the given granularity
     with self.__lock:
       if currency in self.__history_data:
         currency_data = self.__history_data[currency]
 
+        # check if there is any data for the given granularity
         if granularity in currency_data:
           data = currency_data[granularity]
           delta = _deltas[granularity]
+          still_valid = self.__cacheLineStillValid(data, delta)
 
           # check if we got data from a last query that should still be current
-          if datetime.now() - data['lastUpdate'] < delta:
+          if still_valid:
             # check if that data contains enough timestamps
             if len(data['data']) >= count:
               debug("cacheProxy: cache-hit (currency=%s, granularity=%s, count=%s)"

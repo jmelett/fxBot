@@ -39,6 +39,11 @@ class Price:
     return str(self.__value.quantize(self.__pip * Decimal('0.1'), rounding=ROUND_HALF_EVEN))
 
 
+  def __repr__(self):
+    """Get a string representation of the Price object."""
+    return self.__str__()
+
+
   def __neg__(self):
     """Get the negated price.
 

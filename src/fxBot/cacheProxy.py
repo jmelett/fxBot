@@ -108,6 +108,7 @@ class CacheProxy:
         available, false if new data should be queried from the server.
     """
     now = datetime.now()
+    delta = delta_data['delta']
     last_update = data['lastUpdate']
 
     # We have two approaches for checking whether a cached entry is still valid (i.e., holds the
@@ -141,18 +142,25 @@ class CacheProxy:
       # if 1m < granularity && granularity <= 1h -> one hour
       # if 1h < granularity && granularity <= 1d -> one day (day starts at 0:00 UTC)
       # greater granularities are currently not supported
+      server_time_now_aligned = server_time_now.replace(**delta_data['alignment'])
       server_time_last_aligned = server_time_last.replace(**delta_data['alignment'])
 
-      # Next we can relate the actual times to the aligned ones.
-      d = delta_data['delta']
+      # If the time advanced so far that the aligned time base changed then we defintely need to
+      # query the server.
+      if server_time_now_aligned > server_time_last_aligned:
+        return False
+
+      assert server_time_now_aligned == server_time_last_aligned
+
+      # Otherwise we need to relate the actual times to the aligned one(s).
       d1 = server_time_last - server_time_last_aligned
       d2 = server_time_now - server_time_last_aligned
 
-      # And if another 'granularity' fits in between the last time stamp and the new one, the server
-      # should have a new item. If both are equal we still have a current entry in our cache.
-      return int(d1 / d) == int(d2 / d)
+      # And if the difference between the two is still smaller than the 'granularity' then we still
+      # have up-to-date data in our cache, otherwise we need to query the server for new data.
+      return d2 - d1 < delta
     else:
-      return now - last_update < delta_data['delta']
+      return now - last_update < delta
 
 
   def history(self, currency, granularity, count):

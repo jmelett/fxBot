@@ -19,7 +19,7 @@
 
 """A trading bot for the Forex market using OANDA's REST API."""
 
-from signal     import signal, pause, SIGINT, SIGTERM
+from signal     import signal, pause, SIGINT, SIGTERM, SIGHUP
 from logging    import basicConfig, addLevelName, WARNING
 from optparse   import OptionParser
 from oandapy    import API
@@ -31,6 +31,7 @@ from timeProxy  import TimeProxy
 from limitProxy import LimitProxy
 
 
+_proxy = None
 _program = None
 _terminate = False
 
@@ -57,8 +58,22 @@ def _onTerminate(signum, frame):
   exit(0)
 
 
+def _onReload(signum, frame):
+  """Handle the SIGHUP signal.
+
+    Parameters:
+      signum  Unused.
+      frame   Unused.
+  """
+  global _proxy
+
+  # the user explicitly asked for reloading everything
+  _proxy.invalidate()
+
+
 def main():
   """The main function parses the program arguments and reacts on them."""
+  global _proxy
   global _program
   global _terminate
 
@@ -105,15 +120,16 @@ def main():
   # register our custom signal handler for SIGINT to tear down our objects correctly
   signal(SIGINT,  _onTerminate)
   signal(SIGTERM, _onTerminate)
+  signal(SIGHUP,  _onReload)
 
   api = API(environment="practice", access_token=arguments[0])
   server = Server(api)
-  proxy = createProxyInstance(server, CacheProxy, TimeProxy, LimitProxy)
   # timeout in milliseconds
   # XXX: fixed for now -- make configurable
   timeout = 10000
 
-  _program = Program(proxy)
+  _proxy = createProxyInstance(server, CacheProxy, TimeProxy, LimitProxy)
+  _program = Program(_proxy)
 
   if options.list_accounts:
     _program.listAccounts();

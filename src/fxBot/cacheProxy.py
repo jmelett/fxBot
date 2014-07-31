@@ -20,7 +20,7 @@
 from datetimeRfc3339 import parseDate
 from datetime        import datetime, timedelta
 from threading       import Lock
-from logging         import debug
+from logging         import debug, warning
 
 
 """Dictionary for mapping granularities to timedeltas describing their length."""
@@ -144,3 +144,11 @@ class CacheProxy:
     debug("cacheProxy: cache-miss (currency=%s, granularity=%s, count=%s)"
             % (currency, granularity, count))
     return history
+
+
+  def invalidate(self):
+    """Invalidate all cache contents."""
+    with self.__lock:
+      self.__history_data = {}
+
+    warning("cacheProxy: cache invalidated")

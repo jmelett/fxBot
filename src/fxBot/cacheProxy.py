@@ -79,7 +79,7 @@ class CacheProxy:
     #     }
     #   }
     # }
-    self.__historyData = {}
+    self.__history_data = {}
 
 
   def history(self, currency, granularity, count):
@@ -112,11 +112,11 @@ class CacheProxy:
     """
     # check if there is any data for the given granularity
     with self.__lock:
-      if currency in self.__historyData:
-        currencyData = self.__historyData[currency]
+      if currency in self.__history_data:
+        currency_data = self.__history_data[currency]
 
-        if granularity in currencyData:
-          data = currencyData[granularity]
+        if granularity in currency_data:
+          data = currency_data[granularity]
           delta = _deltas[granularity]
 
           # check if we got data from a last query that should still be current
@@ -127,7 +127,7 @@ class CacheProxy:
                       % (currency, granularity, count))
               return data['data'][0:count]
       else:
-        self.__historyData[currency] = {}
+        self.__history_data[currency] = {}
 
     # there is no or to few history data in our cache, get the history from the server
     history = super().history(currency, granularity, count)
@@ -139,7 +139,7 @@ class CacheProxy:
       # note that we could do much more effort to build the history incrementally by comparing
       # timestamps etc., but in the end this simple case just replacing all the stale data with all
       # the new data probably covers all relevant cases we are interested in
-      self.__historyData[currency][granularity] = cache_line
+      self.__history_data[currency][granularity] = cache_line
 
     debug("cacheProxy: cache-miss (currency=%s, granularity=%s, count=%s)"
             % (currency, granularity, count))

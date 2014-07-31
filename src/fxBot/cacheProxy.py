@@ -72,8 +72,7 @@ class CacheProxy:
     # dict indexed by the granularity we are looking for
     # {
     #   currency: {
-    #     granularity:
-    #     {
+    #     granularity: {
     #       'lastUpdate': datetime,
     #       'data': [{'time': datetime, 'open': Decimal, 'close': Decimal }]
     #     }
